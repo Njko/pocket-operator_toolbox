@@ -34,9 +34,9 @@ The core Kotlin application has been implemented and tested:
 - GridEditor uses text-based input (e.g., "1,5,9,13") instead of arrow key navigation
 
 **Next Steps:**
-1. Implement Phase 4 advanced features (OCR, MIDI export, pattern search)
-2. Create more example patterns (808 patterns, classic breaks, etc.)
-3. Add pattern export formats (MIDI, audio visualization)
+1. Implement Phase 4 advanced features (Image display, OCR, MIDI export)
+2. Implement Phase 5 analysis features (Similarity search, Statistics, Export formats)
+3. Create more example patterns (808 patterns, classic breaks, etc.)
 4. Community pattern library integration
 
 ## PO-12 Device Specifications
@@ -247,11 +247,13 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ ChainCommand to display chain programming instructions
 - ✅ Enhanced terminal UI with tables and color-coded output
 
-**Phase 4 (Advanced) - IN PROGRESS (TDD Approach):**
-- ⚠️ Using Test-Driven Development for all Phase 4 features
+**Phase 4 (Advanced Features) - PENDING (TDD Approach):**
+- ⚠️ Using Test-Driven Development for all Phase 4+ features
 - Image display for manual transcription (view sheet music while programming)
 - OCR integration hooks for automatic notation parsing
 - MIDI export (.mid file generation)
+
+**Phase 5 (Analysis & Export) - FUTURE (TDD Approach):**
 - Pattern similarity search and comparison
 - Pattern statistics and analysis
 - Additional export formats (JSON, CSV)
@@ -395,9 +397,9 @@ class MidiExporter {
    - Tests define expected behavior
    - Keep them readable and maintainable
 
-### Phase 4 TDD Checklist
+### Phase 4 & 5 TDD Checklist
 
-Before implementing each Phase 4 feature:
+Before implementing each Phase 4+ feature:
 
 - [ ] Write test cases defining expected behavior
 - [ ] Verify tests fail (RED)
@@ -405,3 +407,13 @@ Before implementing each Phase 4 feature:
 - [ ] Refactor and optimize (REFACTOR)
 - [ ] All tests passing before moving to next feature
 - [ ] Update CLAUDE.md with progress
+
+**Phase 4 Features (Advanced):**
+1. Image display for manual transcription
+2. OCR integration hooks
+3. MIDI export
+
+**Phase 5 Features (Analysis & Export):**
+1. Pattern similarity search
+2. Pattern statistics and analysis
+3. Additional export formats (JSON, CSV)

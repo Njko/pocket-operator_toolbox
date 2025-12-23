@@ -19,6 +19,7 @@ fun main(args: Array<String>) = POToolbox()
         EditCommand(),
         ListCommand(),
         ValidateCommand(),
-        ChainCommand()
+        ChainCommand(),
+        ImageCommand()
     )
     .main(args)
