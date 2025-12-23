@@ -8,7 +8,9 @@
       "Bash(cat:*)",
       "Bash(./gradlew installDist:*)",
       "Bash(./build/install/po-toolbox/bin/po-toolbox view:*)",
-      "Bash(./build/install/po-toolbox/bin/po-toolbox:*)"
+      "Bash(./build/install/po-toolbox/bin/po-toolbox:*)",
+      "Bash(./gradlew test:*)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -247,11 +247,14 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ ChainCommand to display chain programming instructions
 - ✅ Enhanced terminal UI with tables and color-coded output
 
-**Phase 4 (Advanced) - FUTURE:**
-- Image display for manual transcription
+**Phase 4 (Advanced) - IN PROGRESS (TDD Approach):**
+- ⚠️ Using Test-Driven Development for all Phase 4 features
+- Image display for manual transcription (view sheet music while programming)
 - OCR integration hooks for automatic notation parsing
-- MIDI export
-- Pattern search by similarity
+- MIDI export (.mid file generation)
+- Pattern similarity search and comparison
+- Pattern statistics and analysis
+- Additional export formats (JSON, CSV)
 
 ### Markdown Output Format
 
@@ -262,3 +265,143 @@ Patterns are saved as human-readable markdown files with:
 - Notes section for tempo and attribution
 
 **Example output:** See `patterns/` directory after running `create` command
+
+## Test-Driven Development (TDD) Approach
+
+**Starting from Phase 4, all new features follow Test-Driven Development:**
+
+### TDD Workflow
+
+1. **RED** - Write a failing test first
+   - Define expected behavior through tests
+   - Tests should fail initially (no implementation yet)
+   - Use descriptive test names that explain the feature
+
+2. **GREEN** - Write minimal code to pass the test
+   - Implement just enough to make the test pass
+   - Don't add extra features or optimization yet
+   - Focus on correctness, not perfection
+
+3. **REFACTOR** - Improve code while keeping tests green
+   - Clean up implementation
+   - Extract common patterns
+   - Optimize if needed
+   - All tests must still pass
+
+### Testing Infrastructure
+
+**Test Framework:**
+- Kotlin Test (built-in)
+- JUnit Platform (for test execution)
+- Location: `src/test/kotlin/fr/nicolaslinard/po/toolbox/`
+
+**Test Organization:**
+```
+src/test/kotlin/fr/nicolaslinard/po/toolbox/
+├── models/          # Model tests (data classes, validation)
+├── io/              # I/O tests (parsers, writers, exporters)
+├── commands/        # Command tests (CLI behavior)
+├── analysis/        # Analysis tests (similarity, statistics)
+└── integration/     # Integration tests (end-to-end workflows)
+```
+
+**Running Tests:**
+```bash
+# Run all tests
+./gradlew test
+
+# Run specific test class
+./gradlew test --tests "PatternValidatorTest"
+
+# Run tests with coverage
+./gradlew test jacocoTestReport
+
+# Run tests in continuous mode (watch for changes)
+./gradlew test --continuous
+```
+
+### TDD Example for Phase 4
+
+**Example: Implementing MIDI Export**
+
+```kotlin
+// 1. RED - Write failing test first
+@Test
+fun `should export pattern to MIDI format`() {
+    val pattern = createTestPattern()
+    val midiExporter = MidiExporter()
+
+    val midiData = midiExporter.export(pattern)
+
+    assertNotNull(midiData)
+    assertEquals("MThd", midiData.header) // MIDI file header
+    assertTrue(midiData.tracks.isNotEmpty())
+}
+
+// 2. GREEN - Implement minimal code to pass
+class MidiExporter {
+    fun export(pattern: PO12Pattern): MidiData {
+        return MidiData(
+            header = "MThd",
+            tracks = listOf(Track())
+        )
+    }
+}
+
+// 3. REFACTOR - Improve implementation
+// Add proper MIDI encoding, tempo, note mapping, etc.
+// Keep all tests passing!
+```
+
+### Test Categories
+
+**Unit Tests** - Test individual components in isolation
+- Model validation
+- Parser logic
+- Export format generation
+- Utility functions
+
+**Integration Tests** - Test component interactions
+- Command → Parser → Writer flow
+- File I/O with real files
+- End-to-end pattern workflows
+
+**Property-Based Tests** (optional for complex logic)
+- Generate random valid patterns
+- Verify properties hold for all inputs
+- Useful for parsers and validators
+
+### Best Practices
+
+1. **Test names should be descriptive**
+   - ✅ `should export pattern with correct BPM to MIDI`
+   - ❌ `testExport1`
+
+2. **One assertion concept per test**
+   - Test one specific behavior
+   - Makes failures easier to diagnose
+
+3. **Use test fixtures and helpers**
+   - Create reusable test data
+   - Extract common setup to helper functions
+
+4. **Keep tests fast**
+   - Mock external dependencies
+   - Avoid real file I/O when possible
+   - Use in-memory data structures
+
+5. **Tests are documentation**
+   - Tests show how to use the code
+   - Tests define expected behavior
+   - Keep them readable and maintainable
+
+### Phase 4 TDD Checklist
+
+Before implementing each Phase 4 feature:
+
+- [ ] Write test cases defining expected behavior
+- [ ] Verify tests fail (RED)
+- [ ] Implement minimal code to pass tests (GREEN)
+- [ ] Refactor and optimize (REFACTOR)
+- [ ] All tests passing before moving to next feature
+- [ ] Update CLAUDE.md with progress

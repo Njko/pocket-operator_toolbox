@@ -37,3 +37,9 @@ test-input.txt
 amen-bar1-input.txt
 amen-bar2-input.txt
 nul
+
+# Test reports and coverage
+*.exec
+.jacoco/
+build/reports/
+build/test-results/

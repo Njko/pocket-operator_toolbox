@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "2.1.0"
     application
+    jacoco // Code coverage reporting
 }
 
 group = "fr.nicolaslinard.po.toolbox"
@@ -22,6 +23,8 @@ dependencies {
 
     // Testing
     testImplementation(kotlin("test"))
+    testImplementation("io.mockk:mockk:1.13.8") // Mocking framework
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1") // JUnit 5
 }
 
 application {
@@ -34,4 +37,28 @@ tasks.test {
 
 kotlin {
     jvmToolchain(21)
+}
+
+// Configure JaCoCo for code coverage
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.80".toBigDecimal() // 80% coverage minimum
+            }
+        }
+    }
 }
