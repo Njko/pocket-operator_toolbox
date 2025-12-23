@@ -515,8 +515,32 @@ src/main/kotlin/fr/nicolaslinard/po/toolbox/
 - ✅ **Phase 3**: Management - List, validate, chain patterns
 - ✅ **Phase 4**: Advanced - Image display, OCR hooks, MIDI export
 - ✅ **Phase 5**: Analysis - Similarity search, statistics, JSON/CSV export
+- 📋 **Phase 6**: UX Improvements - Enhanced pattern creation, interactive editor, templates
 
 **Total:** 130+ tests, 100% passing, built with TDD
+
+### Phase 6 Planned Features
+
+**6.1 Enhanced Pattern Creation**
+- Show existing instrument steps when adding subsequent instruments
+- Display compact grid view of already-programmed voices during creation
+- Real-time pattern preview as voices are added
+- Context-aware creation: see how new instruments fit with existing rhythm
+
+**6.2 Interactive Grid Editor** (Future)
+- Visual step editor with arrow key navigation
+- Toggle steps with spacebar, navigate with arrows
+- Replace text input with interactive cursor-based editing
+
+**6.3 Pattern Templates** (Future)
+- Common pattern templates (four-on-the-floor, breakbeat, etc.)
+- Quick-start patterns for different genres
+- Copy/paste voices between patterns
+
+**6.4 Undo/Redo Support** (Future)
+- Pattern creation history
+- Undo last voice addition
+- Restore previous edits
 
 ## Technology Stack
 

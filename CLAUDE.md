@@ -285,6 +285,29 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ **Phase 5.2: Pattern Statistics** - COMPLETED (20 tests passing)
 - ✅ **Phase 5.3: Export Formats** - COMPLETED (27 tests passing: 14 JSON + 13 CSV)
 
+**Phase 6 (UX Improvements) - 📋 PLANNED (TDD Approach):**
+- 📋 **Phase 6.1: Enhanced Pattern Creation**
+  - Show existing instrument steps when adding subsequent instruments
+  - Display compact grid view of already-programmed voices during creation
+  - Real-time pattern preview as voices are added
+  - Improves context awareness: users can see how new instrument fits with existing rhythm
+
+- 📋 **Phase 6.2: Interactive Grid Editor** (Future)
+  - Visual step editor with arrow key navigation
+  - Replace text input with interactive cursor-based editing
+  - Toggle steps with spacebar, navigate with arrow keys
+  - Live preview of pattern as it's being programmed
+
+- 📋 **Phase 6.3: Pattern Templates** (Future)
+  - Common pattern templates (four-on-the-floor, breakbeat, etc.)
+  - Quick-start patterns for different genres
+  - Copy/paste voices between patterns
+
+- 📋 **Phase 6.4: Undo/Redo Support** (Future)
+  - Pattern creation history
+  - Undo last voice addition
+  - Restore previous edits
+
 ### Markdown Output Format
 
 Patterns are saved as human-readable markdown files with:
