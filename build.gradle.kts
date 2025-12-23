@@ -21,6 +21,9 @@ dependencies {
     // Kotlin standard library
     implementation(kotlin("stdlib"))
 
+    // JSON support
+    implementation("org.json:json:20231013")
+
     // Testing
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.13.8") // Mocking framework
