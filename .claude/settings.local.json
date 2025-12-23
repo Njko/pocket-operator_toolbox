@@ -5,7 +5,10 @@
       "Bash(./gradlew build:*)",
       "WebFetch(domain:ajalt.github.io)",
       "Bash(./gradlew run:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(./gradlew installDist:*)",
+      "Bash(./build/install/po-toolbox/bin/po-toolbox view:*)",
+      "Bash(./build/install/po-toolbox/bin/po-toolbox:*)"
     ]
   }
 }

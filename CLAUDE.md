@@ -23,9 +23,10 @@ The core Kotlin application has been implemented and tested:
 **Current Status:**
 - Build successful with Java 21 (OpenJDK Corretto 21.0.3)
 - Clikt 5.0.3 API compatibility implemented
-- Phase 1 & 2 complete with full test coverage
+- **Phase 1, 2, & 3 COMPLETE & TESTED ✅**
 - Pattern library includes iconic Amen Break (2 bars)
-- Ready for Phase 3 implementation
+- Full pattern management suite: create, view, edit, list, validate, chain
+- Ready for Phase 4 advanced features
 
 **Version Notes:**
 - Built with Java 21 (updated from original Java 17 requirement)
@@ -33,9 +34,10 @@ The core Kotlin application has been implemented and tested:
 - GridEditor uses text-based input (e.g., "1,5,9,13") instead of arrow key navigation
 
 **Next Steps:**
-1. Implement Phase 2 features (view, edit, list commands)
-2. Add text notation parser for quicker pattern entry
-3. Create more example patterns (Amen Break, etc.)
+1. Implement Phase 4 advanced features (OCR, MIDI export, pattern search)
+2. Create more example patterns (808 patterns, classic breaks, etc.)
+3. Add pattern export formats (MIDI, audio visualization)
+4. Community pattern library integration
 
 ## PO-12 Device Specifications
 
@@ -146,6 +148,49 @@ po-toolbox edit <file>
 - Preserves metadata while updating pattern data
 - Overwrites the original file
 
+**List all patterns:**
+```bash
+po-toolbox list [options]
+```
+- Lists all patterns in the patterns directory
+- Displays table with name, pattern #, BPM, difficulty, genres, and voice count
+- Sortable and filterable
+
+Options:
+- `--directory, -d` - Directory containing patterns (default: "patterns")
+- `--genre, -g` - Filter by genre (case-insensitive partial match)
+- `--difficulty` - Filter by difficulty (beginner/intermediate/advanced)
+- `--min-bpm` - Minimum BPM filter
+- `--max-bpm` - Maximum BPM filter
+
+Examples:
+```bash
+po-toolbox list --genre breakbeat
+po-toolbox list --difficulty intermediate --min-bpm 150
+```
+
+**Validate patterns:**
+```bash
+po-toolbox validate <files...>
+```
+- Validates pattern files for correctness
+- Checks pattern structure, step ranges, metadata
+- Reports errors (must fix) and warnings (best practices)
+- Returns non-zero exit code on errors
+
+**Chain patterns:**
+```bash
+po-toolbox chain <pattern-files...> [--name "Chain Name"]
+```
+- Display programming instructions for multi-bar pattern chains
+- Shows how to program each pattern and chain them together
+- Generates chain sequence string for PO-12 entry
+
+Example:
+```bash
+po-toolbox chain patterns/amen-break-bar-1.md patterns/amen-break-bar-2.md
+```
+
 **Text notation format:**
 For quick pattern entry, you can use text notation (see `doc/text-notation-example.txt`):
 ```
@@ -164,10 +209,11 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - Mordant 3.0.2 (Terminal UI)
 
 **Package Structure:**
-- `fr.nicolaslinard.po.toolbox.models` - Data models (PO12Pattern, PO12DrumVoice, PatternMetadata)
-- `fr.nicolaslinard.po.toolbox.commands` - CLI commands (CreateCommand)
+- `fr.nicolaslinard.po.toolbox.models` - Data models (PO12Pattern, PO12DrumVoice, PatternMetadata, PatternChain)
+- `fr.nicolaslinard.po.toolbox.commands` - CLI commands (Create, View, Edit, List, Validate, Chain)
 - `fr.nicolaslinard.po.toolbox.ui` - Interactive UI components (GridEditor)
-- `fr.nicolaslinard.po.toolbox.io` - File I/O (MarkdownWriter)
+- `fr.nicolaslinard.po.toolbox.io` - File I/O (MarkdownWriter, MarkdownParser, TextNotationParser)
+- `fr.nicolaslinard.po.toolbox.validation` - Pattern validation utilities
 
 **Important Design Notes:**
 - PO12-specific models (PO12Pattern, PO12DrumVoice) are explicitly named to support future PO models (PO-14 Sub, PO-16 Factory, etc.)
@@ -193,11 +239,13 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ EditCommand to modify existing patterns interactively
 - ✅ TextNotationParser for quick entry (`kick: 1,3,11,12` format)
 
-**Phase 3 (Management) - PENDING:**
-- ListCommand with filtering by genre/difficulty
-- Pattern validation
-- PatternChain support (multi-bar phrases)
-- Enhanced terminal UI (colors, better rendering)
+**Phase 3 (Management) - ✅ COMPLETED:**
+- ✅ ListCommand with filtering by genre, difficulty, and BPM range
+- ✅ PatternValidator for validation with errors and warnings
+- ✅ ValidateCommand to check pattern file correctness
+- ✅ PatternChain model for multi-bar phrases
+- ✅ ChainCommand to display chain programming instructions
+- ✅ Enhanced terminal UI with tables and color-coded output
 
 **Phase 4 (Advanced) - FUTURE:**
 - Image display for manual transcription
