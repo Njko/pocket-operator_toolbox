@@ -94,20 +94,33 @@ A Kotlin-based terminal application that helps create and manage PO-12 patterns.
 c:\gradle\bin\gradle wrapper --gradle-version 8.5
 ```
 
-**Build the project:**
+**Build executable JAR (recommended):**
 ```bash
-./gradlew build
+./gradlew shadowJar
+```
+This creates a single executable JAR at `build/libs/po-toolbox-1.0.0.jar` (~5.5MB) containing all dependencies.
+
+**Run using wrapper scripts:**
+```bash
+# Windows
+./po-toolbox.bat create
+
+# Linux/Mac
+./po-toolbox create
+
+# Or run JAR directly
+java -jar build/libs/po-toolbox-1.0.0.jar create
 ```
 
-**Run the application:**
-```bash
-./gradlew run --args="create"
-```
-
-**Or run directly after building:**
+**Alternative: Distribution installation:**
 ```bash
 ./gradlew installDist
 ./build/install/po-toolbox/bin/po-toolbox create
+```
+
+**Development: Run with Gradle:**
+```bash
+./gradlew run --args="create"
 ```
 
 **Troubleshooting:**

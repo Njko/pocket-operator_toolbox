@@ -1,0 +1,3 @@
+#!/bin/bash
+# PO-Toolbox executable wrapper script (Linux/Mac)
+java -jar "$(dirname "$0")/build/libs/po-toolbox-1.0.0.jar" "$@"

@@ -35,6 +35,30 @@ A comprehensive command-line tool for creating, managing, and analyzing Pocket O
 
 ### Installation
 
+#### Option 1: Executable JAR (Recommended)
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd pocket-operator_toolbox
+
+# Build executable JAR with all dependencies
+./gradlew shadowJar
+
+# Run using wrapper script (Windows)
+./po-toolbox.bat <command>
+
+# Or run using wrapper script (Linux/Mac)
+./po-toolbox <command>
+
+# Or run JAR directly
+java -jar build/libs/po-toolbox-1.0.0.jar <command>
+```
+
+The executable JAR (`po-toolbox-1.0.0.jar`) is a single file containing all dependencies. You can copy it anywhere and run it with just Java installed.
+
+#### Option 2: Distribution Installation
+
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -54,7 +78,7 @@ export PATH=$PATH:$(pwd)/build/install/po-toolbox/bin
 
 ```bash
 # Create a new pattern interactively
-./build/install/po-toolbox/bin/po-toolbox create
+./po-toolbox.bat create
 
 # Follow prompts to enter:
 # - Pattern name, BPM, genre, difficulty
@@ -62,15 +86,21 @@ export PATH=$PATH:$(pwd)/build/install/po-toolbox/bin
 # - Step programming (use text input: 1,5,9,13)
 ```
 
+Note: Use `./po-toolbox` instead of `./po-toolbox.bat` on Linux/Mac.
+
 ## Usage & Examples
 
-All examples below use the `po-toolbox` command. Adjust path as needed:
+All examples below use the `po-toolbox` command. Choose your preferred method:
 ```bash
-# If installed to PATH
-po-toolbox <command>
+# Using wrapper script (recommended)
+./po-toolbox.bat <command>    # Windows
+./po-toolbox <command>         # Linux/Mac
 
-# Or use full path
-./build/install/po-toolbox/bin/po-toolbox <command>
+# Using JAR directly
+java -jar build/libs/po-toolbox-1.0.0.jar <command>
+
+# Or if installed to PATH
+po-toolbox <command>
 ```
 
 ### 📝 Pattern Creation & Management

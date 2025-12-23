@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.1.0"
     application
     jacoco // Code coverage reporting
+    id("com.github.johnrengelman.shadow") version "8.1.1" // Fat JAR creation
 }
 
 group = "fr.nicolaslinard.po.toolbox"
@@ -64,4 +65,15 @@ tasks.jacocoTestCoverageVerification {
             }
         }
     }
+}
+
+// Configure Shadow plugin for executable JAR
+tasks.shadowJar {
+    archiveBaseName.set("po-toolbox")
+    archiveClassifier.set("")
+    archiveVersion.set("1.0.0")
+    manifest {
+        attributes["Main-Class"] = "fr.nicolaslinard.po.toolbox.MainKt"
+    }
+    mergeServiceFiles()
 }
