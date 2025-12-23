@@ -4,6 +4,8 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import fr.nicolaslinard.po.toolbox.commands.CreateCommand
+import fr.nicolaslinard.po.toolbox.commands.ViewCommand
+import fr.nicolaslinard.po.toolbox.commands.EditCommand
 
 class POToolbox : CliktCommand(name = "po-toolbox") {
     override fun help(context: com.github.ajalt.clikt.core.Context) =
@@ -13,5 +15,9 @@ class POToolbox : CliktCommand(name = "po-toolbox") {
 }
 
 fun main(args: Array<String>) = POToolbox()
-    .subcommands(CreateCommand())
+    .subcommands(
+        CreateCommand(),
+        ViewCommand(),
+        EditCommand()
+    )
     .main(args)

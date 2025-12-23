@@ -23,8 +23,9 @@ The core Kotlin application has been implemented and tested:
 **Current Status:**
 - Build successful with Java 21 (OpenJDK Corretto 21.0.3)
 - Clikt 5.0.3 API compatibility implemented
-- Test pattern generated successfully (see `patterns/test-pattern.md`)
-- Ready for Phase 2 implementation
+- Phase 1 & 2 complete with full test coverage
+- Pattern library includes iconic Amen Break (2 bars)
+- Ready for Phase 3 implementation
 
 **Version Notes:**
 - Built with Java 21 (updated from original Java 17 requirement)
@@ -116,19 +117,44 @@ c:\gradle\bin\gradle wrapper --gradle-version 8.5
 
 **Create a new pattern:**
 ```bash
-po-toolbox create
+po-toolbox create [options]
 ```
 - Interactive prompts for pattern metadata (name, BPM, genre, difficulty, etc.)
 - Text-based step entry: enter step numbers separated by spaces or commas (e.g., "1,5,9,13")
 - Visual grid preview shows active steps marked with [●]
 - Outputs human-readable markdown to `patterns/` directory
 
-**Example workflow:**
-1. Enter pattern metadata (name, BPM, genre, etc.)
-2. Select a drum voice (1-16)
-3. Enter step numbers for that voice (e.g., "1 5 9 13" for kick on quarter notes)
-4. Repeat for other voices or press Enter to finish
-5. Pattern saved as markdown file
+Options:
+- `--output, -o` - Output directory for pattern files (default: "patterns")
+- `--pattern-number, -p` - PO-12 pattern number 1-16 (default: 1)
+
+**View an existing pattern:**
+```bash
+po-toolbox view <file>
+```
+- Displays pattern with formatted output in terminal
+- Shows metadata (BPM, genre, difficulty, source)
+- Visual step grids with colored output
+- Programming instructions for the PO-12
+
+**Edit an existing pattern:**
+```bash
+po-toolbox edit <file>
+```
+- Modify existing pattern files interactively
+- Add, remove, or change drum voices
+- Preserves metadata while updating pattern data
+- Overwrites the original file
+
+**Text notation format:**
+For quick pattern entry, you can use text notation (see `doc/text-notation-example.txt`):
+```
+kick: 1,5,9,13
+snare: 5,13
+closed-hh: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+```
+
+Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`, `tom-high`, `rim`, `clap`, `cowbell`, `cymbal`, `click`, `noise`, `blip`, `tone`, `sticks`
 
 ### Architecture
 
@@ -161,11 +187,11 @@ po-toolbox create
 7. ✅ Build tested with Java 21
 8. ✅ Sample pattern created and verified
 
-**Phase 2 (Enhanced Input) - PENDING:**
-- TextNotationParser for quick entry (`kick: 1,3,11,12`)
-- ViewCommand to display patterns in terminal
-- MarkdownParser to read existing patterns
-- EditCommand to modify patterns
+**Phase 2 (Enhanced Input) - ✅ COMPLETED:**
+- ✅ MarkdownParser to read existing pattern files
+- ✅ ViewCommand to display patterns in terminal with formatted output
+- ✅ EditCommand to modify existing patterns interactively
+- ✅ TextNotationParser for quick entry (`kick: 1,3,11,12` format)
 
 **Phase 3 (Management) - PENDING:**
 - ListCommand with filtering by genre/difficulty
