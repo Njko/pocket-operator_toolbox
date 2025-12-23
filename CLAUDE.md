@@ -247,11 +247,25 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ ChainCommand to display chain programming instructions
 - ✅ Enhanced terminal UI with tables and color-coded output
 
-**Phase 4 (Advanced Features) - PENDING (TDD Approach):**
+**Phase 4 (Advanced Features) - IN PROGRESS (TDD Approach):**
 - ⚠️ Using Test-Driven Development for all Phase 4+ features
-- Image display for manual transcription (view sheet music while programming)
-- OCR integration hooks for automatic notation parsing
-- MIDI export (.mid file generation)
+- ✅ **Phase 4.1: Image Display** - COMPLETED
+  - RED: 9 tests for image validation, dimensions, format support
+  - GREEN: ImageDisplay.kt with javax.imageio integration
+  - REFACTOR: ImageCommand for viewing drum notation images
+  - Tests: 9/9 passing
+- ✅ **Phase 4.2: OCR Integration** - COMPLETED
+  - RED: 16 tests for OCR engine, notation parser, instrument mapper
+  - GREEN: OcrEngine.kt, NotationParser.kt, InstrumentMapper.kt, OcrPreprocessor.kt
+  - REFACTOR: OcrCommand with confidence filtering and mock implementation
+  - Tests: 16/16 passing
+  - Features: Interface-based OCR abstraction, GM drum mapping, image validation
+- ✅ **Phase 4.3: MIDI Export** - COMPLETED
+  - RED: 23 tests for MIDI file generation, note mapping, tempo conversion
+  - GREEN: MidiExporter.kt, MidiNoteMapper.kt, MidiExportOptions
+  - REFACTOR: MidiCommand for CLI with pattern chaining support
+  - Tests: 23/23 passing
+  - Features: GM drum mapping, PPQ configuration, multi-pattern export, metadata inclusion
 
 **Phase 5 (Analysis & Export) - FUTURE (TDD Approach):**
 - Pattern similarity search and comparison

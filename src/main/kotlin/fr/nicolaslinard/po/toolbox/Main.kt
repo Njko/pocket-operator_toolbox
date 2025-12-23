@@ -21,6 +21,7 @@ fun main(args: Array<String>) = POToolbox()
         ValidateCommand(),
         ChainCommand(),
         ImageCommand(),
-        OcrCommand()
+        OcrCommand(),
+        MidiCommand()
     )
     .main(args)
