@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(./gradlew build:*)",
+      "WebFetch(domain:ajalt.github.io)",
+      "Bash(./gradlew run:*)",
+      "Bash(cat:*)"
+    ]
+  }
+}
