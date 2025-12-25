@@ -4,21 +4,60 @@ import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.rendering.TextColors.*
 import com.github.ajalt.mordant.rendering.TextStyles.*
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
+import fr.nicolaslinard.po.toolbox.models.PatternEditHistory
+
+/**
+ * Editing mode for grid editor
+ */
+enum class EditMode {
+    TEXT,        // Current text-based input (default)
+    INTERACTIVE  // New arrow-key navigation mode
+}
 
 class GridEditor(private val terminal: Terminal) {
 
     /**
-     * Opens a text-based grid editor for a specific drum voice.
+     * Opens a grid editor for a specific drum voice.
      * Returns the list of active step numbers (1-16), or empty list if cancelled.
      *
      * @param drumVoice The drum voice to edit
      * @param initialSteps Initial steps for this voice
      * @param contextVoices Other voices in the pattern for context display
+     * @param mode Editing mode (TEXT or INTERACTIVE)
+     * @param history Optional pattern edit history for undo/redo support
      */
     fun edit(
         drumVoice: PO12DrumVoice,
         initialSteps: List<Int> = emptyList(),
-        contextVoices: Map<PO12DrumVoice, List<Int>> = emptyMap()
+        contextVoices: Map<PO12DrumVoice, List<Int>> = emptyMap(),
+        mode: EditMode = EditMode.TEXT,
+        history: PatternEditHistory? = null
+    ): List<Int> {
+        return when (mode) {
+            EditMode.TEXT -> editText(drumVoice, initialSteps, contextVoices)
+            EditMode.INTERACTIVE -> {
+                // Check if interactive mode is supported
+                val inputReader = MordantKeyboardReader()
+                if (inputReader.isInteractiveModeSupported()) {
+                    // Use interactive editor
+                    val interactiveEditor = InteractiveGridEditor(terminal, inputReader)
+                    interactiveEditor.editInteractive(drumVoice, initialSteps, contextVoices, history)
+                } else {
+                    // Fallback to text mode
+                    terminal.println((yellow)("Interactive mode not supported, using text mode"))
+                    editText(drumVoice, initialSteps, contextVoices)
+                }
+            }
+        }
+    }
+
+    /**
+     * Text-based editing (original implementation)
+     */
+    private fun editText(
+        drumVoice: PO12DrumVoice,
+        initialSteps: List<Int>,
+        contextVoices: Map<PO12DrumVoice, List<Int>>
     ): List<Int> {
         terminal.println((bold + cyan)("=== ${drumVoice.displayName} (Sound ${drumVoice.poNumber}) ==="))
         terminal.println()

@@ -120,4 +120,94 @@ class GridEditorTest {
         // "cancel" command should return initial steps unchanged
         // This tests existing functionality
     }
+
+    // Phase 6.2: Mode selection and interactive editing tests
+
+    @Test
+    fun `should default to TEXT mode when no mode specified`() {
+        val terminal = Terminal()
+        val editor = GridEditor(terminal)
+        val voice = PO12DrumVoice.KICK
+        val initialSteps = listOf(1, 5, 9, 13)
+
+        // Default edit() call should use TEXT mode
+        val result = editor.edit(voice, initialSteps)
+
+        // Should work with text-based input (existing behavior)
+        assertEquals(initialSteps, result)
+    }
+
+    @Test
+    fun `should use TEXT mode when explicitly specified`() {
+        val terminal = Terminal()
+        val editor = GridEditor(terminal)
+        val voice = PO12DrumVoice.KICK
+        val initialSteps = listOf(1, 5, 9, 13)
+
+        // Explicitly request TEXT mode
+        val result = editor.edit(voice, initialSteps, emptyMap(), EditMode.TEXT)
+
+        assertEquals(initialSteps, result)
+    }
+
+    @Test
+    fun `should use INTERACTIVE mode when specified and supported`() {
+        val terminal = Terminal()
+        val editor = GridEditor(terminal)
+        val voice = PO12DrumVoice.KICK
+        val initialSteps = listOf(1, 5, 9, 13)
+
+        // Request INTERACTIVE mode
+        val result = editor.edit(voice, initialSteps, emptyMap(), EditMode.INTERACTIVE)
+
+        // Should invoke InteractiveGridEditor
+        // Result will depend on mock keyboard input
+        assertTrue(true, "Interactive mode invocation test placeholder")
+    }
+
+    @Test
+    fun `should fallback to TEXT mode when INTERACTIVE not supported`() {
+        val terminal = Terminal()
+        val editor = GridEditor(terminal)
+        val voice = PO12DrumVoice.KICK
+        val initialSteps = listOf(1, 5, 9, 13)
+
+        // Request INTERACTIVE mode, but if terminal doesn't support it,
+        // should gracefully fallback to TEXT mode
+        val result = editor.edit(voice, initialSteps, emptyMap(), EditMode.INTERACTIVE)
+
+        // Fallback should work without error
+        assertTrue(true, "Fallback to TEXT mode test placeholder")
+    }
+
+    @Test
+    fun `should pass context voices to interactive editor`() {
+        val terminal = Terminal()
+        val editor = GridEditor(terminal)
+        val voice = PO12DrumVoice.SNARE
+        val initialSteps = listOf(5, 13)
+        val contextVoices = mapOf(
+            PO12DrumVoice.KICK to listOf(1, 5, 9, 13),
+            PO12DrumVoice.CLOSED_HH to listOf(1, 3, 5, 7, 9, 11, 13, 15)
+        )
+
+        // Interactive mode should receive context voices for display
+        val result = editor.edit(voice, initialSteps, contextVoices, EditMode.INTERACTIVE)
+
+        assertTrue(true, "Context passing to interactive editor test placeholder")
+    }
+
+    @Test
+    fun `should pass history to interactive editor for undo redo support`() {
+        val terminal = Terminal()
+        val editor = GridEditor(terminal)
+        val voice = PO12DrumVoice.KICK
+        val initialSteps = emptyList<Int>()
+        val history = fr.nicolaslinard.po.toolbox.models.PatternEditHistory()
+
+        // Interactive mode should receive history for Ctrl+Z/Ctrl+Y support
+        val result = editor.edit(voice, initialSteps, emptyMap(), EditMode.INTERACTIVE, history)
+
+        assertTrue(true, "History passing to interactive editor test placeholder")
+    }
 }

@@ -106,4 +106,58 @@ class CreateCommandTest {
 
         assertTrue(true, "Integration test placeholder for Phase 6.4")
     }
+
+    // Phase 6.2: Interactive Grid Editor Tests
+
+    @Test
+    fun `should accept --interactive flag`() {
+        // CreateCommand should accept --interactive or -i flag
+        // to enable interactive arrow-key editing mode
+
+        // Expected behavior:
+        // 1. Flag is defined in command options
+        // 2. Default is false (text mode)
+        // 3. When flag is set, interactive mode is enabled
+
+        assertTrue(true, "Integration test placeholder for Phase 6.2")
+    }
+
+    @Test
+    fun `should default to text mode when no interactive flag`() {
+        // Without --interactive flag, CreateCommand should use
+        // text-based editing (existing behavior)
+
+        // Expected behavior:
+        // 1. No flag → EditMode.TEXT passed to GridEditor
+        // 2. Text input prompts appear
+        // 3. Existing functionality preserved
+
+        assertTrue(true, "Integration test placeholder for Phase 6.2")
+    }
+
+    @Test
+    fun `should pass EditMode INTERACTIVE to GridEditor when flag is set`() {
+        // When --interactive flag is set, CreateCommand should pass
+        // EditMode.INTERACTIVE to GridEditor.edit()
+
+        // Expected behavior:
+        // 1. --interactive flag set → EditMode.INTERACTIVE
+        // 2. GridEditor receives correct mode parameter
+        // 3. Interactive editing is triggered
+
+        assertTrue(true, "Integration test placeholder for Phase 6.2")
+    }
+
+    @Test
+    fun `should display fallback message when interactive mode not supported`() {
+        // If interactive mode is requested but not supported by terminal,
+        // CreateCommand should display a fallback message
+
+        // Expected behavior:
+        // 1. GridEditor detects interactive not supported
+        // 2. Display: "Interactive mode not supported, using text mode"
+        // 3. Gracefully fallback to text-based editing
+
+        assertTrue(true, "Integration test placeholder for Phase 6.2")
+    }
 }

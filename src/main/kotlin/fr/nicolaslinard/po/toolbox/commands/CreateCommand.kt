@@ -3,6 +3,7 @@ package fr.nicolaslinard.po.toolbox.commands
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.mordant.terminal.Terminal
@@ -27,6 +28,11 @@ class CreateCommand : CliktCommand(name = "create") {
         "--pattern-number", "-p",
         help = "PO-12 pattern number (1-16)"
     ).int().default(1)
+
+    private val interactiveMode by option(
+        "--interactive", "-i",
+        help = "Use interactive grid editor (arrow keys + spacebar)"
+    ).flag(default = false)
 
     private val terminal = Terminal()
     private val multiVoiceRenderer = MultiVoiceRenderer(terminal)
@@ -79,9 +85,11 @@ class CreateCommand : CliktCommand(name = "create") {
                 }
                 is VoiceSelectionResult.Voice -> {
                     val voice = result.voice
-                    // Edit the grid for this voice (Phase 6.1: pass context voices)
+                    // Edit the grid for this voice (Phase 6.1: pass context voices, Phase 6.2: pass mode)
                     val currentSteps = voices[voice] ?: emptyList()
-                    val newSteps = gridEditor.edit(voice, currentSteps, voices)
+                    val mode = if (interactiveMode) fr.nicolaslinard.po.toolbox.ui.EditMode.INTERACTIVE
+                               else fr.nicolaslinard.po.toolbox.ui.EditMode.TEXT
+                    val newSteps = gridEditor.edit(voice, currentSteps, voices, mode, history)
 
                     // Phase 6.4: Create command based on operation type
                     val command = when {
