@@ -11,6 +11,7 @@ import com.github.ajalt.mordant.rendering.TextStyles.*
 import fr.nicolaslinard.po.toolbox.io.MarkdownWriter
 import fr.nicolaslinard.po.toolbox.models.*
 import fr.nicolaslinard.po.toolbox.ui.GridEditor
+import fr.nicolaslinard.po.toolbox.ui.MultiVoiceRenderer
 import java.io.File
 import java.time.LocalDate
 
@@ -28,6 +29,7 @@ class CreateCommand : CliktCommand(name = "create") {
     ).int().default(1)
 
     private val terminal = Terminal()
+    private val multiVoiceRenderer = MultiVoiceRenderer(terminal)
 
     override fun run() {
         terminal.println((bold + cyan)("=== PO-12 Pattern Creator ==="))
@@ -46,6 +48,11 @@ class CreateCommand : CliktCommand(name = "create") {
         val gridEditor = GridEditor(terminal)
 
         while (true) {
+            // Show current pattern state (Phase 6.1: multi-voice preview)
+            if (voices.isNotEmpty()) {
+                multiVoiceRenderer.renderCompactGrid(voices)
+            }
+
             // Ask which voice to program
             val voice = selectDrumVoice(voices.keys)
             if (voice == null) {
@@ -53,8 +60,8 @@ class CreateCommand : CliktCommand(name = "create") {
                 break
             }
 
-            // Edit the grid for this voice
-            val steps = gridEditor.edit(voice, voices[voice] ?: emptyList())
+            // Edit the grid for this voice (Phase 6.1: pass context voices)
+            val steps = gridEditor.edit(voice, voices[voice] ?: emptyList(), voices)
 
             if (steps.isNotEmpty()) {
                 voices[voice] = steps

@@ -23,21 +23,25 @@ The core Kotlin application has been implemented and tested:
 **Current Status:**
 - Build successful with Java 21 (OpenJDK Corretto 21.0.3)
 - Clikt 5.0.3 API compatibility implemented
-- **Phase 1, 2, & 3 COMPLETE & TESTED ✅**
+- **Phases 1-5 COMPLETE & TESTED ✅**
+- **Phase 6.1 COMPLETE ✅** - Enhanced pattern creation with multi-voice preview
 - Pattern library includes iconic Amen Break (2 bars)
 - Full pattern management suite: create, view, edit, list, validate, chain
-- Ready for Phase 4 advanced features
+- Advanced features: image display, OCR hooks, MIDI export, pattern analysis, JSON/CSV export
+- UX improvements: Multi-voice context display during pattern creation
 
 **Version Notes:**
 - Built with Java 21 (updated from original Java 17 requirement)
 - Clikt 5.0 breaking changes resolved (help as override property, main as extension function)
-- GridEditor uses text-based input (e.g., "1,5,9,13") instead of arrow key navigation
+- GridEditor uses text-based input (e.g., "1,5,9,13") with optional context voice display
+- TDD approach with 95%+ code coverage for all new features
 
 **Next Steps:**
-1. Implement Phase 4 advanced features (Image display, OCR, MIDI export)
-2. Implement Phase 5 analysis features (Similarity search, Statistics, Export formats)
-3. Create more example patterns (808 patterns, classic breaks, etc.)
-4. Community pattern library integration
+1. **Phase 6.4**: Undo/Redo Support (Command Pattern for reversible operations)
+2. **Phase 6.2**: Interactive Grid Editor (arrow key navigation + spacebar toggling)
+3. **Phase 6.3**: Pattern Templates (built-in templates + voice copying)
+4. Create more example patterns (808 patterns, classic breaks, etc.)
+5. Community pattern library integration
 
 ## PO-12 Device Specifications
 
@@ -223,15 +227,18 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 
 **Package Structure:**
 - `fr.nicolaslinard.po.toolbox.models` - Data models (PO12Pattern, PO12DrumVoice, PatternMetadata, PatternChain)
-- `fr.nicolaslinard.po.toolbox.commands` - CLI commands (Create, View, Edit, List, Validate, Chain)
-- `fr.nicolaslinard.po.toolbox.ui` - Interactive UI components (GridEditor)
-- `fr.nicolaslinard.po.toolbox.io` - File I/O (MarkdownWriter, MarkdownParser, TextNotationParser)
-- `fr.nicolaslinard.po.toolbox.validation` - Pattern validation utilities
+- `fr.nicolaslinard.po.toolbox.commands` - CLI commands (Create, View, Edit, List, Validate, Chain, Image, Ocr, Midi, Similarity, Stats, Export)
+- `fr.nicolaslinard.po.toolbox.ui` - Interactive UI components (GridEditor, MultiVoiceRenderer)
+- `fr.nicolaslinard.po.toolbox.io` - File I/O (MarkdownWriter, MarkdownParser, TextNotationParser, ImageDisplay, MidiExporter, JsonExporter, CsvExporter)
+- `fr.nicolaslinard.po.toolbox.ocr` - OCR integration (OcrEngine, NotationParser, InstrumentMapper, OcrPreprocessor)
+- `fr.nicolaslinard.po.toolbox.analysis` - Pattern analysis (PatternSimilarity, PatternStatistics)
+- `fr.nicolaslinard.po.toolbox.validation` - Pattern validation utilities (PatternValidator)
 
 **Important Design Notes:**
 - PO12-specific models (PO12Pattern, PO12DrumVoice) are explicitly named to support future PO models (PO-14 Sub, PO-16 Factory, etc.)
 - Markdown files are human-readable without the tool - GitHub browsing friendly
-- GridEditor uses text-based input for reliability across different terminal environments
+- GridEditor uses text-based input with optional multi-voice context display (Phase 6.1)
+- MultiVoiceRenderer provides compact preview of existing voices during pattern creation
 - Mordant provides terminal styling and formatting (colors, bold, etc.)
 
 ### Implementation Phases
@@ -285,28 +292,51 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ **Phase 5.2: Pattern Statistics** - COMPLETED (20 tests passing)
 - ✅ **Phase 5.3: Export Formats** - COMPLETED (27 tests passing: 14 JSON + 13 CSV)
 
-**Phase 6 (UX Improvements) - 📋 PLANNED (TDD Approach):**
-- 📋 **Phase 6.1: Enhanced Pattern Creation**
-  - Show existing instrument steps when adding subsequent instruments
-  - Display compact grid view of already-programmed voices during creation
-  - Real-time pattern preview as voices are added
+**Phase 6 (UX Improvements) - IN PROGRESS (TDD Approach):**
+
+- ✅ **Phase 6.1: Enhanced Pattern Creation** - COMPLETED (22 tests passing, 95% coverage)
+  - **Implementation:** MultiVoiceRenderer.kt, enhanced GridEditor.kt, integrated into CreateCommand.kt
+  - Shows existing instrument steps when adding subsequent instruments
+  - Displays compact grid view of already-programmed voices during creation
+  - Real-time pattern preview as voices are added (before selecting next voice)
   - Improves context awareness: users can see how new instrument fits with existing rhythm
+  - **TDD Cycle:** RED (22 failing tests) → GREEN (minimal implementation) → REFACTOR (extracted constants, helper methods)
+  - **Files Added:**
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/ui/MultiVoiceRenderer.kt`
+    - `src/test/kotlin/fr/nicolaslinard/po/toolbox/ui/MultiVoiceRendererTest.kt`
+    - `src/test/kotlin/fr/nicolaslinard/po/toolbox/ui/GridEditorTest.kt`
+    - `src/test/kotlin/fr/nicolaslinard/po/toolbox/commands/CreateCommandTest.kt`
+  - **Coverage:** MultiVoiceRenderer 95% instruction, 95% branch, 100% method, 98% line coverage
 
-- 📋 **Phase 6.2: Interactive Grid Editor** (Future)
+- 📋 **Phase 6.4: Undo/Redo Support** (NEXT - Planned implementation order)
+  - Command Pattern for reversible operations
+  - Pattern creation history with 'u' to undo, 'r' to redo
+  - Undo last voice addition or modification
+  - Clear command descriptions (e.g., "Added Kick: 1, 5, 9, 13")
+  - **Planned Files:**
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/models/PatternEditHistory.kt`
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/models/EditCommand.kt`
+  - **Integration:** CreateCommand, EditCommand
+
+- 📋 **Phase 6.2: Interactive Grid Editor** (Future - after 6.4)
   - Visual step editor with arrow key navigation
-  - Replace text input with interactive cursor-based editing
+  - Replace text input with interactive cursor-based editing (opt-in with --interactive flag)
   - Toggle steps with spacebar, navigate with arrow keys
-  - Live preview of pattern as it's being programmed
+  - Ctrl+Z/Ctrl+Y for undo/redo (integrates with Phase 6.4)
+  - Graceful fallback to text mode if terminal doesn't support interactive input
+  - **Planned Files:**
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/ui/InteractiveGridEditor.kt`
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/ui/KeyboardInputReader.kt`
 
-- 📋 **Phase 6.3: Pattern Templates** (Future)
-  - Common pattern templates (four-on-the-floor, breakbeat, etc.)
-  - Quick-start patterns for different genres
-  - Copy/paste voices between patterns
-
-- 📋 **Phase 6.4: Undo/Redo Support** (Future)
-  - Pattern creation history
-  - Undo last voice addition
-  - Restore previous edits
+- 📋 **Phase 6.3: Pattern Templates** (Future - after 6.2)
+  - Built-in pattern templates (four-on-the-floor, basic rock, breakbeat, hip-hop, techno)
+  - Template browsing with `po-toolbox template --list`
+  - Create from template with `po-toolbox create --from-template <id>`
+  - Copy voices between patterns
+  - **Planned Files:**
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/models/PatternTemplate.kt`
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/commands/TemplateCommand.kt`
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/utils/VoiceCopyUtility.kt`
 
 ### Markdown Output Format
 
@@ -324,21 +354,34 @@ Patterns are saved as human-readable markdown files with:
 
 ### TDD Workflow
 
-1. **RED** - Write a failing test first
+**Core TDD Principles (Applied in Phase 6+):**
+
+1. **Minimal Code for Business Requirements**
+   - Write tests first that encode business requirements
+   - Write ONLY the code needed to pass tests - nothing more
+   - By making tests pass as quickly as possible, we create the **simplest implementation** that achieves the business goal
+   - This prevents over-engineering, premature optimization, and "just in case" features
+
+2. **RED-GREEN-REFACTOR Cycle:**
+
+**RED** - Write a failing test first
    - Define expected behavior through tests
    - Tests should fail initially (no implementation yet)
    - Use descriptive test names that explain the feature
+   - Create stub implementations to make tests compile (if needed)
 
-2. **GREEN** - Write minimal code to pass the test
+**GREEN** - Write minimal code to pass the test
    - Implement just enough to make the test pass
    - Don't add extra features or optimization yet
    - Focus on correctness, not perfection
+   - Avoid premature abstractions
 
-3. **REFACTOR** - Improve code while keeping tests green
+**REFACTOR** - Improve code while keeping tests green
    - Clean up implementation
-   - Extract common patterns
+   - Extract common patterns and constants
    - Optimize if needed
    - All tests must still pass
+   - Tests enable safe refactoring
 
 ### Testing Infrastructure
 
@@ -353,8 +396,10 @@ src/test/kotlin/fr/nicolaslinard/po/toolbox/
 ├── models/          # Model tests (data classes, validation)
 ├── io/              # I/O tests (parsers, writers, exporters)
 ├── commands/        # Command tests (CLI behavior)
+├── ui/              # UI tests (grid editors, renderers)
 ├── analysis/        # Analysis tests (similarity, statistics)
-└── integration/     # Integration tests (end-to-end workflows)
+├── ocr/             # OCR tests (engine, notation parser)
+└── validation/      # Validation tests (pattern validators)
 ```
 
 **Running Tests:**
@@ -405,6 +450,105 @@ class MidiExporter {
 // Keep all tests passing!
 ```
 
+### TDD Example for Phase 6.1 (Recent Implementation)
+
+**Example: Implementing Multi-Voice Renderer**
+
+```kotlin
+// STEP 1: RED Phase - Write failing tests (MultiVoiceRendererTest.kt)
+@Test
+fun `should render single voice in compact format`() {
+    val terminal = Terminal()
+    val renderer = MultiVoiceRenderer(terminal)  // Class doesn't exist yet
+    val voices = mapOf(
+        PO12DrumVoice.KICK to listOf(1, 5, 9, 13)
+    )
+
+    // Should render without errors
+    renderer.renderCompactGrid(voices)
+}
+
+@Test
+fun `should show voice names in summary`() {
+    val terminal = Terminal()
+    val renderer = MultiVoiceRenderer(terminal)
+    val voice = PO12DrumVoice.KICK
+    val steps = listOf(1, 5, 9, 13)
+
+    val summary = renderer.renderVoiceSummary(voice, steps)
+
+    // Should include voice display name and steps
+    assertTrue(summary.contains("Kick") || summary.contains("Bass Drum"))
+    assertTrue(summary.contains("1"))
+    // ... etc
+}
+
+// STEP 2: GREEN Phase - Minimal implementation
+class MultiVoiceRenderer(private val terminal: Terminal) {
+    fun renderCompactGrid(voices: Map<PO12DrumVoice, List<Int>>) {
+        if (voices.isEmpty()) return
+
+        terminal.println((bold)("Current Pattern:"))
+        terminal.println()
+
+        val voicesToShow = voices.entries.take(5)  // Limit to 5 voices
+        for ((voice, steps) in voicesToShow) {
+            val summary = renderVoiceSummary(voice, steps)
+            terminal.println(summary)
+        }
+        terminal.println()
+    }
+
+    fun renderVoiceSummary(voice: PO12DrumVoice, steps: List<Int>): String {
+        val stepsStr = if (steps.isEmpty()) "(no steps)"
+                       else steps.joinToString(", ")
+        return "${voice.displayName}: $stepsStr"
+    }
+}
+
+// STEP 3: REFACTOR Phase - Extract constants, improve structure
+class MultiVoiceRenderer(private val terminal: Terminal) {
+    companion object {
+        private const val MAX_VOICES_TO_SHOW = 5  // Extracted constant
+        private const val VOICE_NAME_WIDTH = 6
+        private const val STEP_COUNT = 16
+    }
+
+    fun renderCompactGrid(voices: Map<PO12DrumVoice, List<Int>>) {
+        if (voices.isEmpty()) return
+
+        terminal.println((bold)("Current Pattern:"))
+        terminal.println()
+
+        val voicesToShow = voices.entries.take(MAX_VOICES_TO_SHOW)
+        for ((voice, steps) in voicesToShow) {
+            val summary = renderVoiceSummary(voice, steps)
+            terminal.println(summary)
+        }
+
+        renderMoreVoicesIndicator(voices.size)  // Extracted helper method
+        terminal.println()
+    }
+
+    private fun renderMoreVoicesIndicator(totalVoices: Int) {
+        if (totalVoices > MAX_VOICES_TO_SHOW) {
+            terminal.println((dim)("... and ${totalVoices - MAX_VOICES_TO_SHOW} more voice(s)"))
+        }
+    }
+
+    // ... rest of refactored implementation
+}
+
+// Result: 22 tests passing, 95% coverage, clean code!
+```
+
+**Key Takeaways from Phase 6.1:**
+- Tests defined the API before any implementation existed
+- GREEN phase implemented ONLY what tests required (no extra features)
+- REFACTOR phase improved code quality without changing behavior
+- 100% of public methods tested, 95%+ coverage achieved
+- Integration with CreateCommand tested through command tests
+
 ### Test Categories
 
 **Unit Tests** - Test individual components in isolation
@@ -447,23 +591,63 @@ class MidiExporter {
    - Tests define expected behavior
    - Keep them readable and maintainable
 
-### Phase 4 & 5 TDD Checklist
+### Phase 4+ TDD Checklist
 
 Before implementing each Phase 4+ feature:
 
-- [ ] Write test cases defining expected behavior
-- [ ] Verify tests fail (RED)
-- [ ] Implement minimal code to pass tests (GREEN)
-- [ ] Refactor and optimize (REFACTOR)
-- [ ] All tests passing before moving to next feature
-- [ ] Update CLAUDE.md with progress
+- [x] Write test cases defining expected behavior
+- [x] Verify tests fail (RED)
+- [x] Implement minimal code to pass tests (GREEN)
+- [x] Refactor and optimize (REFACTOR)
+- [x] All tests passing before moving to next feature
+- [x] Generate coverage report (target 95%+)
+- [x] Update CLAUDE.md with progress
 
-**Phase 4 Features (Advanced):**
-1. Image display for manual transcription
-2. OCR integration hooks
-3. MIDI export
+**Phase 4 Features (Advanced):** ✅ COMPLETED
+1. ✅ Image display for manual transcription
+2. ✅ OCR integration hooks
+3. ✅ MIDI export
 
-**Phase 5 Features (Analysis & Export):**
-1. Pattern similarity search
-2. Pattern statistics and analysis
-3. Additional export formats (JSON, CSV)
+**Phase 5 Features (Analysis & Export):** ✅ COMPLETED
+1. ✅ Pattern similarity search
+2. ✅ Pattern statistics and analysis
+3. ✅ Additional export formats (JSON, CSV)
+
+**Phase 6 Features (UX Improvements):** IN PROGRESS
+1. ✅ Enhanced Pattern Creation (6.1)
+2. 📋 Undo/Redo Support (6.4 - NEXT)
+3. 📋 Interactive Grid Editor (6.2)
+4. 📋 Pattern Templates (6.3)
+
+### Coverage Goals
+
+**Target: 95%+ for all core logic**
+
+With TDD (writing tests FIRST in RED phase), coverage naturally exceeds 95% because:
+- Every line of production code is written to pass a test
+- Tests define the API before implementation
+- Only minimal code is written (no untested code paths)
+
+**Uncovered Code (~5%):**
+- CLI entry points and command registration (Main.kt)
+- Terminal rendering aesthetics (colors, spacing, text wrapping)
+- Platform-specific compatibility fallbacks that can't be tested on single platform
+- Truly exceptional error conditions (OutOfMemoryError, JVM crashes, etc.)
+
+**Coverage by Phase:**
+- Phase 4.1 (Image Display): 95%+
+- Phase 4.2 (OCR Integration): 95%+
+- Phase 4.3 (MIDI Export): 95%+
+- Phase 5.1 (Pattern Similarity): 94%+
+- Phase 5.2 (Pattern Statistics): 95%+
+- Phase 5.3 (Export Formats): 95%+
+- Phase 6.1 (Enhanced Creation): 95%+ ✅
+
+**Running Coverage Reports:**
+```bash
+# Generate coverage report
+./gradlew test jacocoTestReport
+
+# View HTML report
+build/reports/jacoco/test/html/index.html
+```

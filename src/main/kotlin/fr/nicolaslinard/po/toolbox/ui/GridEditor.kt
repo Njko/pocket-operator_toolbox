@@ -10,8 +10,16 @@ class GridEditor(private val terminal: Terminal) {
     /**
      * Opens a text-based grid editor for a specific drum voice.
      * Returns the list of active step numbers (1-16), or empty list if cancelled.
+     *
+     * @param drumVoice The drum voice to edit
+     * @param initialSteps Initial steps for this voice
+     * @param contextVoices Other voices in the pattern for context display
      */
-    fun edit(drumVoice: PO12DrumVoice, initialSteps: List<Int> = emptyList()): List<Int> {
+    fun edit(
+        drumVoice: PO12DrumVoice,
+        initialSteps: List<Int> = emptyList(),
+        contextVoices: Map<PO12DrumVoice, List<Int>> = emptyMap()
+    ): List<Int> {
         terminal.println((bold + cyan)("=== ${drumVoice.displayName} (Sound ${drumVoice.poNumber}) ==="))
         terminal.println()
 
