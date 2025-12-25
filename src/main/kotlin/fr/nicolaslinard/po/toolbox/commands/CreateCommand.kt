@@ -12,6 +12,7 @@ import com.github.ajalt.mordant.rendering.TextStyles.*
 import fr.nicolaslinard.po.toolbox.io.MarkdownWriter
 import fr.nicolaslinard.po.toolbox.models.*
 import fr.nicolaslinard.po.toolbox.ui.GridEditor
+import fr.nicolaslinard.po.toolbox.models.BuiltInTemplates
 import fr.nicolaslinard.po.toolbox.ui.MultiVoiceRenderer
 import java.io.File
 import java.time.LocalDate
@@ -34,6 +35,11 @@ class CreateCommand : CliktCommand(name = "create") {
         help = "Use interactive grid editor (arrow keys + spacebar)"
     ).flag(default = false)
 
+    private val fromTemplate by option(
+        "--from-template", "-t",
+        help = "Start from a pattern template (e.g., four-on-the-floor)"
+    )
+
     private val terminal = Terminal()
     private val multiVoiceRenderer = MultiVoiceRenderer(terminal)
     private val history = PatternEditHistory()  // Phase 6.4: undo/redo support
@@ -53,6 +59,29 @@ class CreateCommand : CliktCommand(name = "create") {
         // Collect pattern voices
         val voices = mutableMapOf<PO12DrumVoice, List<Int>>()
         val gridEditor = GridEditor(terminal)
+
+        // Phase 6.3: Load from template if specified
+        fromTemplate?.let { templateId ->
+            val template = BuiltInTemplates.all().find { it.id == templateId }
+            if (template != null) {
+                voices.putAll(template.voices)
+                terminal.println((green)("✓ Loaded template: ${template.name}"))
+                terminal.println((dim)(template.description))
+                template.suggestedBPM?.let { bpm ->
+                    terminal.println((dim)("Suggested BPM: $bpm"))
+                }
+                terminal.println()
+                multiVoiceRenderer.renderCompactGrid(voices)
+                terminal.println()
+            } else {
+                terminal.println((yellow)("Template '$templateId' not found."))
+                terminal.println((dim)("Available templates:"))
+                BuiltInTemplates.all().forEach { tmpl ->
+                    terminal.println((dim)("  - ${tmpl.id}: ${tmpl.name}"))
+                }
+                terminal.println()
+            }
+        }
 
         while (true) {
             // Show current pattern state (Phase 6.1: multi-voice preview)

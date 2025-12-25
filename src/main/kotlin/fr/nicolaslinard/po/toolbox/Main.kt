@@ -23,6 +23,7 @@ fun main(args: Array<String>) = POToolbox()
         ImageCommand(),
         OcrCommand(),
         MidiCommand(),
-        SimilarCommand()
+        SimilarCommand(),
+        TemplateCommand()
     )
     .main(args)

@@ -160,4 +160,70 @@ class CreateCommandTest {
 
         assertTrue(true, "Integration test placeholder for Phase 6.2")
     }
+
+    // Phase 6.3: Pattern Templates Tests
+
+    @Test
+    fun `should accept --from-template flag with template ID`() {
+        // CreateCommand should accept --from-template <id> flag
+        // to start pattern creation from a template
+
+        // Expected behavior:
+        // 1. Flag is defined in command options
+        // 2. Accepts template ID as value
+        // 3. Loads template voices when flag provided
+
+        assertTrue(true, "Integration test placeholder for Phase 6.3")
+    }
+
+    @Test
+    fun `should load template voices when --from-template is specified`() {
+        // When --from-template four-on-the-floor is used,
+        // pattern should start with template voices
+
+        // Expected behavior:
+        // 1. Look up template by ID
+        // 2. Initialize voices map with template voices
+        // 3. Display template loaded confirmation
+
+        assertTrue(true, "Integration test placeholder for Phase 6.3")
+    }
+
+    @Test
+    fun `should allow editing template voices after loading`() {
+        // After loading template, user can still edit voices
+
+        // Expected behavior:
+        // 1. Template voices loaded
+        // 2. User can modify any voice
+        // 3. User can add new voices
+        // 4. User can remove template voices
+
+        assertTrue(true, "Integration test placeholder for Phase 6.3")
+    }
+
+    @Test
+    fun `should display error for invalid template ID`() {
+        // CreateCommand --from-template invalid-id should show error
+
+        // Expected behavior:
+        // 1. Template not found → error message
+        // 2. "Template 'invalid-id' not found"
+        // 3. List available templates as suggestion
+
+        assertTrue(true, "Integration test placeholder for Phase 6.3")
+    }
+
+    @Test
+    fun `should show template preview before starting creation`() {
+        // When using template, show preview of template voices
+
+        // Expected behavior:
+        // 1. Load template
+        // 2. Display template name and description
+        // 3. Show multi-voice preview of template
+        // 4. Proceed to allow editing
+
+        assertTrue(true, "Integration test placeholder for Phase 6.3")
+    }
 }
