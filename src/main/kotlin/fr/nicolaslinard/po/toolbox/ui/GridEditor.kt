@@ -36,18 +36,42 @@ class GridEditor(private val terminal: Terminal) {
         return when (mode) {
             EditMode.TEXT -> editText(drumVoice, initialSteps, contextVoices)
             EditMode.INTERACTIVE -> {
-                // Check if interactive mode is supported
-                val inputReader = MordantKeyboardReader()
+                // Try JLine3 keyboard reader first, fallback to Mordant stub
+                val inputReader = createKeyboardReader()
                 if (inputReader.isInteractiveModeSupported()) {
-                    // Use interactive editor
-                    val interactiveEditor = InteractiveGridEditor(terminal, inputReader)
-                    interactiveEditor.editInteractive(drumVoice, initialSteps, contextVoices, history)
+                    // Use interactive editor with proper resource cleanup
+                    try {
+                        val interactiveEditor = InteractiveGridEditor(terminal, inputReader)
+                        interactiveEditor.editInteractive(drumVoice, initialSteps, contextVoices, history)
+                    } finally {
+                        // CRITICAL: Close the keyboard reader to restore terminal to normal mode
+                        // This ensures the next voice selection menu works properly
+                        if (inputReader is java.io.Closeable) {
+                            inputReader.close()
+                        }
+                    }
                 } else {
                     // Fallback to text mode
                     terminal.println((yellow)("Interactive mode not supported, using text mode"))
                     editText(drumVoice, initialSteps, contextVoices)
                 }
             }
+        }
+    }
+
+    /**
+     * Create a keyboard reader with JLine3 fallback.
+     *
+     * Tries to create JLine3KeyboardReader first for full interactive support.
+     * Falls back to MordantKeyboardReader if JLine3 unavailable.
+     */
+    private fun createKeyboardReader(): KeyboardInputReader {
+        return try {
+            JLine3KeyboardReader()
+        } catch (e: Exception) {
+            terminal.println((yellow)("JLine3 not available: ${e.message}"))
+            terminal.println((dim)("Falling back to stub keyboard reader"))
+            MordantKeyboardReader()
         }
     }
 

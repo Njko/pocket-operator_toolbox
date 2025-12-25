@@ -19,6 +19,9 @@ dependencies {
     // Mordant - Terminal UI
     implementation("com.github.ajalt.mordant:mordant:3.0.2")
 
+    // JLine3 - Cross-platform keyboard input
+    implementation("org.jline:jline:3.25.0")
+
     // Kotlin standard library
     implementation(kotlin("stdlib"))
 
