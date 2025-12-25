@@ -23,25 +23,37 @@ The core Kotlin application has been implemented and tested:
 **Current Status:**
 - Build successful with Java 21 (OpenJDK Corretto 21.0.3)
 - Clikt 5.0.3 API compatibility implemented
-- **Phases 1-5 COMPLETE & TESTED ✅**
-- **Phase 6.1 COMPLETE ✅** - Enhanced pattern creation with multi-voice preview
-- Pattern library includes iconic Amen Break (2 bars)
-- Full pattern management suite: create, view, edit, list, validate, chain
-- Advanced features: image display, OCR hooks, MIDI export, pattern analysis, JSON/CSV export
-- UX improvements: Multi-voice context display during pattern creation
+- **ALL PHASES COMPLETE & TESTED ✅**
+  - **Phases 1-3**: Core functionality (create, view, edit, list, validate, chain)
+  - **Phases 4-5**: Advanced features (image, OCR, MIDI, similarity, stats, export)
+  - **Phase 6**: UX Improvements - ALL 4 SUB-PHASES COMPLETE ✅
+    - 6.1: Enhanced pattern creation with multi-voice preview
+    - 6.4: Undo/Redo support with command pattern
+    - 6.2: Interactive grid editor (optional arrow-key mode)
+    - 6.3: Pattern templates and voice copying
+- **241 tests passing** (100% success rate)
+- **95%+ code coverage** for all core logic
+- Pattern library includes:
+  - Iconic Amen Break (2 bars, 169 BPM)
+  - Drum and Bass breakbeat (174 BPM)
+  - Built-in templates: Four-on-the-Floor, Basic Rock, Breakbeat, Hip-Hop, Techno
+- MIDI export demonstrated with 8 example files
+- Full pattern management suite with template system
 
 **Version Notes:**
 - Built with Java 21 (updated from original Java 17 requirement)
 - Clikt 5.0 breaking changes resolved (help as override property, main as extension function)
-- GridEditor uses text-based input (e.g., "1,5,9,13") with optional context voice display
-- TDD approach with 95%+ code coverage for all new features
+- GridEditor supports both text mode (default) and interactive mode (opt-in with --interactive flag)
+- TDD approach followed for all Phases 4-6 (RED-GREEN-REFACTOR cycle)
+- Shadow JAR build (5.5MB executable with all dependencies)
 
-**Next Steps:**
-1. **Phase 6.4**: Undo/Redo Support (Command Pattern for reversible operations)
-2. **Phase 6.2**: Interactive Grid Editor (arrow key navigation + spacebar toggling)
-3. **Phase 6.3**: Pattern Templates (built-in templates + voice copying)
-4. Create more example patterns (808 patterns, classic breaks, etc.)
-5. Community pattern library integration
+**Potential Future Enhancements:**
+1. JLine3 integration for true cross-platform arrow-key support in interactive mode
+2. Additional built-in templates (808 patterns, more genre variations)
+3. Pattern variation generator (automatic groove variations)
+4. Community pattern library integration
+5. Real-time OCR integration (beyond mock implementation)
+6. Audio export (render patterns to WAV/MP3)
 
 ## PO-12 Device Specifications
 
@@ -140,12 +152,17 @@ po-toolbox create [options]
 ```
 - Interactive prompts for pattern metadata (name, BPM, genre, difficulty, etc.)
 - Text-based step entry: enter step numbers separated by spaces or commas (e.g., "1,5,9,13")
+- Optional interactive mode with arrow keys and spacebar (use `--interactive` flag)
+- Multi-voice context preview shows existing programmed voices
+- Undo/redo support during creation (press 'u' or 'r')
 - Visual grid preview shows active steps marked with [●]
 - Outputs human-readable markdown to `patterns/` directory
 
 Options:
 - `--output, -o` - Output directory for pattern files (default: "patterns")
 - `--pattern-number, -p` - PO-12 pattern number 1-16 (default: 1)
+- `--interactive, -i` - Use interactive grid editor (arrow keys + spacebar)
+- `--from-template, -t` - Start from a built-in template (e.g., "four-on-the-floor")
 
 **View an existing pattern:**
 ```bash
@@ -206,6 +223,35 @@ po-toolbox chain <pattern-files...> [--name "Chain Name"]
 Example:
 ```bash
 po-toolbox chain patterns/amen-break-bar-1.md patterns/amen-break-bar-2.md
+```
+
+**Browse and use pattern templates:**
+```bash
+po-toolbox template [options]
+```
+- List built-in pattern templates with `--list`
+- Filter templates by category with `--category <category>`
+- Interactive template selection and pattern creation
+- Start new patterns from proven templates
+
+Options:
+- `--list, -l` - Display all available templates
+- `--category, -c` - Filter templates by category (foundation, genre)
+- `--output, -o` - Output directory for pattern files (default: "patterns")
+- `--pattern-number, -p` - PO-12 pattern number 1-16 (default: 1)
+
+Built-in templates:
+- **four-on-the-floor** - House/disco kick pattern (120 BPM, beginner)
+- **basic-rock** - Classic rock beat (120 BPM, beginner)
+- **basic-breakbeat** - Syncopated breakbeat (140 BPM, intermediate)
+- **basic-hiphop** - Hip-hop groove (90 BPM, beginner)
+- **basic-techno** - Techno with claps (128 BPM, beginner)
+
+Examples:
+```bash
+po-toolbox template --list
+po-toolbox template --category genre
+po-toolbox create --from-template four-on-the-floor
 ```
 
 **Text notation format:**
