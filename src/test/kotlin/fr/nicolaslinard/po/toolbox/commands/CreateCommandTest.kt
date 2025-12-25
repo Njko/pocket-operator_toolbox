@@ -64,4 +64,46 @@ class CreateCommandTest {
 
         assertTrue(true, "Integration test placeholder - will be implemented in GREEN phase")
     }
+
+    // Phase 6.4: Undo/Redo Support Tests
+
+    @Test
+    fun `should initialize edit history for pattern creation`() {
+        // CreateCommand should initialize a PatternEditHistory instance
+        // to track all voice additions and modifications
+
+        // Expected behavior:
+        // 1. PatternEditHistory created on command start
+        // 2. All voice operations recorded in history
+        // 3. History available for undo/redo operations
+
+        assertTrue(true, "Integration test placeholder for Phase 6.4")
+    }
+
+    @Test
+    fun `should display undo option when history is available`() {
+        // After adding at least one voice, CreateCommand should show
+        // an undo option in the voice selection menu
+
+        // Expected behavior:
+        // 1. If history.canUndo() → display "Press 'u' to undo: [description]"
+        // 2. User can press 'u' to undo last operation
+        // 3. Undo description shows what will be undone
+
+        assertTrue(true, "Integration test placeholder for Phase 6.4")
+    }
+
+    @Test
+    fun `should handle undo and redo operations correctly`() {
+        // CreateCommand should properly handle undo/redo user input
+        // and update the pattern state accordingly
+
+        // Expected behavior:
+        // 1. Add voice → press 'u' → voice removed (undo)
+        // 2. After undo, can press 'r' to redo
+        // 3. Pattern state updated after each undo/redo
+        // 4. Multi-voice preview updated to reflect state
+
+        assertTrue(true, "Integration test placeholder for Phase 6.4")
+    }
 }

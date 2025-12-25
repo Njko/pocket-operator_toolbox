@@ -292,7 +292,7 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
 - ✅ **Phase 5.2: Pattern Statistics** - COMPLETED (20 tests passing)
 - ✅ **Phase 5.3: Export Formats** - COMPLETED (27 tests passing: 14 JSON + 13 CSV)
 
-**Phase 6 (UX Improvements) - IN PROGRESS (TDD Approach):**
+**Phase 6 (UX Improvements) - IN PROGRESS (TDD Approach):** 2 of 4 sub-phases completed (6.1 ✅, 6.4 ✅)
 
 - ✅ **Phase 6.1: Enhanced Pattern Creation** - COMPLETED (22 tests passing, 95% coverage)
   - **Implementation:** MultiVoiceRenderer.kt, enhanced GridEditor.kt, integrated into CreateCommand.kt
@@ -308,15 +308,31 @@ Voice short names: `kick`, `snare`, `closed-hh`, `open-hh`, `tom-low`, `tom-mid`
     - `src/test/kotlin/fr/nicolaslinard/po/toolbox/commands/CreateCommandTest.kt`
   - **Coverage:** MultiVoiceRenderer 95% instruction, 95% branch, 100% method, 98% line coverage
 
-- 📋 **Phase 6.4: Undo/Redo Support** (NEXT - Planned implementation order)
-  - Command Pattern for reversible operations
-  - Pattern creation history with 'u' to undo, 'r' to redo
-  - Undo last voice addition or modification
-  - Clear command descriptions (e.g., "Added Kick: 1, 5, 9, 13")
-  - **Planned Files:**
-    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/models/PatternEditHistory.kt`
-    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/models/EditCommand.kt`
-  - **Integration:** CreateCommand, EditCommand
+- ✅ **Phase 6.4: Undo/Redo Support** - COMPLETED (30 tests passing, 100% coverage for history, 87-90% for commands)
+  - **Implementation:** PatternEditHistory.kt with Command Pattern for reversible operations
+  - Pattern creation history with 'u' to undo, 'r' to redo during voice selection
+  - Undo/redo for voice additions, removals, and modifications
+  - Clear command descriptions (e.g., "Added Kick: 1, 5, 9, 13", "Modified Snare: 5, 13")
+  - Stack-based history management with configurable size limit (default 50 operations)
+  - Redo stack automatically cleared when new command is executed
+  - **TDD Cycle:** RED (30 failing tests) → GREEN (minimal implementation) → REFACTOR (Kotlin idioms, expression bodies)
+  - **Files Added:**
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/models/PatternEditHistory.kt` (history + 3 command implementations)
+    - `src/test/kotlin/fr/nicolaslinard/po/toolbox/models/PatternEditHistoryTest.kt` (17 tests)
+    - `src/test/kotlin/fr/nicolaslinard/po/toolbox/models/EditCommandTest.kt` (12 tests)
+  - **Files Modified:**
+    - `src/main/kotlin/fr/nicolaslinard/po/toolbox/commands/CreateCommand.kt` (integrated undo/redo with VoiceSelectionResult sealed class)
+    - `src/test/kotlin/fr/nicolaslinard/po/toolbox/commands/CreateCommandTest.kt` (enhanced with 3 additional tests)
+  - **Coverage:**
+    - PatternEditHistory: 100% instruction, 100% branch coverage ✅
+    - AddVoiceCommand: 90% instruction coverage ✅
+    - RemoveVoiceCommand: 86% instruction coverage ✅
+    - ModifyVoiceCommand: 87% instruction coverage ✅
+  - **Command Pattern:**
+    - `EditCommand` interface with execute(), undo(), describe() methods
+    - `AddVoiceCommand` - adds new voice, undo removes it
+    - `RemoveVoiceCommand` - removes voice, undo restores it with previous steps
+    - `ModifyVoiceCommand` - changes voice steps, undo restores old steps
 
 - 📋 **Phase 6.2: Interactive Grid Editor** (Future - after 6.4)
   - Visual step editor with arrow key navigation

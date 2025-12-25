@@ -30,6 +30,7 @@ class CreateCommand : CliktCommand(name = "create") {
 
     private val terminal = Terminal()
     private val multiVoiceRenderer = MultiVoiceRenderer(terminal)
+    private val history = PatternEditHistory()  // Phase 6.4: undo/redo support
 
     override fun run() {
         terminal.println((bold + cyan)("=== PO-12 Pattern Creator ==="))
@@ -53,25 +54,59 @@ class CreateCommand : CliktCommand(name = "create") {
                 multiVoiceRenderer.renderCompactGrid(voices)
             }
 
-            // Ask which voice to program
-            val voice = selectDrumVoice(voices.keys)
-            if (voice == null) {
-                // User is done
-                break
+            // Phase 6.4: Show undo/redo options if available
+            if (history.canUndo()) {
+                terminal.println((dim)("  u. Undo: ${history.getUndoDescription()}"))
+            }
+            if (history.canRedo()) {
+                terminal.println((dim)("  r. Redo: ${history.getRedoDescription()}"))
             }
 
-            // Edit the grid for this voice (Phase 6.1: pass context voices)
-            val steps = gridEditor.edit(voice, voices[voice] ?: emptyList(), voices)
+            // Ask which voice to program (or undo/redo)
+            val result = selectDrumVoice(voices.keys)
 
-            if (steps.isNotEmpty()) {
-                voices[voice] = steps
-                terminal.println((green)("✓ ${voice.displayName}: ${steps.joinToString(", ")}"))
-            } else {
-                // Remove voice if all steps were cleared
-                voices.remove(voice)
+            when (result) {
+                is VoiceSelectionResult.Done -> break
+                is VoiceSelectionResult.Undo -> {
+                    history.undo()?.undo(voices)
+                    terminal.println((yellow)("↶ Undone"))
+                    terminal.println()
+                }
+                is VoiceSelectionResult.Redo -> {
+                    history.redo()?.execute(voices)
+                    terminal.println((yellow)("↷ Redone"))
+                    terminal.println()
+                }
+                is VoiceSelectionResult.Voice -> {
+                    val voice = result.voice
+                    // Edit the grid for this voice (Phase 6.1: pass context voices)
+                    val currentSteps = voices[voice] ?: emptyList()
+                    val newSteps = gridEditor.edit(voice, currentSteps, voices)
+
+                    // Phase 6.4: Create command based on operation type
+                    val command = when {
+                        newSteps.isEmpty() && currentSteps.isNotEmpty() -> {
+                            RemoveVoiceCommand(voice, currentSteps)
+                        }
+                        currentSteps.isEmpty() && newSteps.isNotEmpty() -> {
+                            AddVoiceCommand(voice, newSteps)
+                        }
+                        newSteps != currentSteps -> {
+                            ModifyVoiceCommand(voice, currentSteps, newSteps)
+                        }
+                        else -> null
+                    }
+
+                    // Execute command and add to history
+                    if (command != null) {
+                        history.execute(command)
+                        command.execute(voices)
+                        terminal.println((green)("✓ ${voice.displayName}: ${newSteps.joinToString(", ")}"))
+                    }
+
+                    terminal.println()
+                }
             }
-
-            terminal.println()
         }
 
         if (voices.isEmpty()) {
@@ -139,7 +174,7 @@ class CreateCommand : CliktCommand(name = "create") {
         )
     }
 
-    private fun selectDrumVoice(existingVoices: Set<PO12DrumVoice>): PO12DrumVoice? {
+    private fun selectDrumVoice(existingVoices: Set<PO12DrumVoice>): VoiceSelectionResult {
         terminal.println((bold)("Select a drum voice to program (or press Enter to finish):"))
         terminal.println()
 
@@ -150,18 +185,31 @@ class CreateCommand : CliktCommand(name = "create") {
         }
         terminal.println()
 
-        val input = prompt("Choice (1-16, or Enter to finish)") { true }
+        val input = prompt("Choice (1-16, u=undo, r=redo, Enter=finish)") { true }
 
-        if (input.isNullOrBlank()) {
-            return null
+        return when {
+            input.isNullOrBlank() -> VoiceSelectionResult.Done
+            input.equals("u", ignoreCase = true) -> VoiceSelectionResult.Undo
+            input.equals("r", ignoreCase = true) -> VoiceSelectionResult.Redo
+            else -> {
+                val choice = input.toIntOrNull()
+                if (choice != null && choice in 1..16) {
+                    VoiceSelectionResult.Voice(availableVoices[choice - 1])
+                } else {
+                    terminal.println((red)("Invalid choice. Please enter 1-16, u, r, or Enter."))
+                    selectDrumVoice(existingVoices)
+                }
+            }
         }
+    }
 
-        val choice = input.toIntOrNull()
-        return if (choice != null && choice in 1..16) {
-            availableVoices[choice - 1]
-        } else {
-            terminal.println((red)("Invalid choice. Please enter a number between 1 and 16."))
-            selectDrumVoice(existingVoices)
-        }
+    /**
+     * Phase 6.4: Sealed class for voice selection results including undo/redo
+     */
+    private sealed class VoiceSelectionResult {
+        data class Voice(val voice: PO12DrumVoice) : VoiceSelectionResult()
+        object Undo : VoiceSelectionResult()
+        object Redo : VoiceSelectionResult()
+        object Done : VoiceSelectionResult()
     }
 }
