@@ -2,8 +2,7 @@ package fr.nicolaslinard.po.toolbox.ui
 
 import org.jline.terminal.Terminal
 import org.jline.terminal.TerminalBuilder
-import org.jline.utils.AttributedString
-import org.jline.utils.InfoCmp
+import org.jline.utils.NonBlockingReader
 import java.io.Closeable
 
 /**
@@ -20,6 +19,7 @@ import java.io.Closeable
  */
 class JLine3KeyboardReader : KeyboardInputReader, Closeable {
     private val terminal: Terminal
+    private val nonBlockingReader: NonBlockingReader
     private var originalAttributes: org.jline.terminal.Attributes? = null
     private var isTerminalOpen = true
 
@@ -28,6 +28,9 @@ class JLine3KeyboardReader : KeyboardInputReader, Closeable {
         terminal = TerminalBuilder.builder()
             .system(true)
             .build()
+
+        // Get the non-blocking reader for timeout support
+        nonBlockingReader = terminal.reader()
 
         // Save original attributes for restoration
         originalAttributes = terminal.attributes
@@ -46,10 +49,10 @@ class JLine3KeyboardReader : KeyboardInputReader, Closeable {
     }
 
     /**
-     * Read a single key from the terminal without blocking indefinitely.
+     * Read a single key from the terminal (blocking).
      *
      * Parses escape sequences for arrow keys and special keys.
-     * Returns null if no key is available (non-blocking).
+     * Blocks until a key is pressed.
      */
     override fun readKey(): Key? {
         if (!isTerminalOpen) {
@@ -57,15 +60,8 @@ class JLine3KeyboardReader : KeyboardInputReader, Closeable {
         }
 
         return try {
-            val reader = terminal.reader()
-
-            // Check if input is available (non-blocking)
-            if (!reader.ready()) {
-                return null
-            }
-
-            // Read first character
-            val firstChar = reader.read()
+            // Blocking read - wait for input
+            val firstChar = nonBlockingReader.read()
             if (firstChar == -1) {
                 return null // End of stream
             }
@@ -75,34 +71,22 @@ class JLine3KeyboardReader : KeyboardInputReader, Closeable {
             // Handle escape sequences (arrow keys, etc.)
             if (char == '\u001b') { // ESC character
                 // Arrow keys send ESC + [ + letter in quick succession
-                // We need to read the next characters to determine if it's an arrow key
-                // or just the ESC key pressed alone
+                // Use JLine3's non-blocking read with timeout to check for more chars
+                val secondChar = nonBlockingReader.read(100) // 100ms timeout
+                if (secondChar == -1 || secondChar == NonBlockingReader.READ_EXPIRED) {
+                    return Key.Escape // Just ESC key by itself
+                }
 
-                // Small delay to let the rest of the sequence arrive
-                Thread.sleep(20)
-
-                // Check if more input is available
-                if (reader.ready()) {
-                    val secondChar = reader.read()
-                    if (secondChar == -1) {
-                        return Key.Escape // End of stream
+                if (secondChar == '['.code) {
+                    // This is an ANSI escape sequence \x1b[X
+                    val thirdChar = nonBlockingReader.read(100)
+                    if (thirdChar == -1 || thirdChar == NonBlockingReader.READ_EXPIRED) {
+                        return Key.Escape // Incomplete sequence
                     }
 
-                    if (secondChar == '['.code) {
-                        // This is an ANSI escape sequence \x1b[X
-                        // Read the final character (blocking)
-                        val thirdChar = reader.read()
-                        if (thirdChar == -1) {
-                            return Key.Escape // Incomplete sequence
-                        }
-
-                        return parseEscapeSequence("[${thirdChar.toChar()}")
-                    } else {
-                        // Not a recognized escape sequence, treat as ESC
-                        return Key.Escape
-                    }
+                    return parseEscapeSequence("[${thirdChar.toChar()}")
                 } else {
-                    // No more input available, just the ESC key by itself
+                    // Not a recognized escape sequence, treat as ESC
                     return Key.Escape
                 }
             }

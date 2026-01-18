@@ -42,14 +42,8 @@ class InteractiveGridEditor(
 
         // Main editing loop
         while (true) {
-            // Read next key (blocking with small timeout)
-            val key = inputReader.readKey()
-
-            if (key == null) {
-                // No key available, wait a bit to avoid busy loop
-                Thread.sleep(50)
-                continue
-            }
+            // Read next key (blocking)
+            val key = inputReader.readKey() ?: continue
 
             when (key) {
                 is Key.ArrowLeft -> {
