@@ -71,7 +71,7 @@ class CreateCommand : CliktCommand(name = "create") {
                     terminal.println((dim)("Suggested BPM: $bpm"))
                 }
                 terminal.println()
-                multiVoiceRenderer.renderCompactGrid(voices)
+                multiVoiceRenderer.renderCombinedSteps(voices)
                 terminal.println()
             } else {
                 terminal.println((yellow)("Template '$templateId' not found."))
@@ -86,7 +86,7 @@ class CreateCommand : CliktCommand(name = "create") {
         while (true) {
             // Show current pattern state (Phase 6.1: multi-voice preview)
             if (voices.isNotEmpty()) {
-                multiVoiceRenderer.renderCompactGrid(voices)
+                multiVoiceRenderer.renderCombinedSteps(voices)
             }
 
             // Phase 6.4: Show undo/redo options if available
