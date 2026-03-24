@@ -1,8 +1,7 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm") version "2.3.20"
     application
     jacoco // Code coverage reporting
-    id("com.github.johnrengelman.shadow") version "8.1.1" // Fat JAR creation
 }
 
 group = "fr.nicolaslinard.po.toolbox"
@@ -12,30 +11,37 @@ repositories {
     mavenCentral()
 }
 
+val jfxVersion = "24.0.1"
+val jfxClassifier = "linux-aarch64"
+
 dependencies {
-    // Clikt - CLI framework
-    implementation("com.github.ajalt.clikt:clikt:5.0.3")
-
-    // Mordant - Terminal UI
-    implementation("com.github.ajalt.mordant:mordant:3.0.2")
-
-    // JLine3 - Cross-platform keyboard input
-    implementation("org.jline:jline:3.25.0")
-
     // Kotlin standard library
     implementation(kotlin("stdlib"))
 
     // JSON support
-    implementation("org.json:json:20231013")
+    implementation("org.json:json:20250517")
+
+    // JavaFX (linux-aarch64 for Raspberry Pi)
+    implementation("org.openjfx:javafx-base:$jfxVersion:$jfxClassifier")
+    implementation("org.openjfx:javafx-graphics:$jfxVersion:$jfxClassifier")
+    implementation("org.openjfx:javafx-controls:$jfxVersion:$jfxClassifier")
+    implementation("org.openjfx:javafx-fxml:$jfxVersion:$jfxClassifier")
+
+    // TornadoFX - Desktop UI framework
+    implementation("no.tornado:tornadofx:1.7.20")
 
     // Testing
     testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:1.13.8") // Mocking framework
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1") // JUnit 5
+    testImplementation("io.mockk:mockk:1.14.3") // Mocking framework
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2") // JUnit 5
 }
 
 application {
-    mainClass.set("fr.nicolaslinard.po.toolbox.MainKt")
+    mainClass.set("fr.nicolaslinard.po.toolbox.desktop.POToolboxAppKt")
+    applicationDefaultJvmArgs = listOf(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED"
+    )
 }
 
 tasks.test {
@@ -43,12 +49,12 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 // Configure JaCoCo for code coverage
 jacoco {
-    toolVersion = "0.8.11"
+    toolVersion = "0.8.13"
 }
 
 tasks.jacocoTestReport {
@@ -68,15 +74,4 @@ tasks.jacocoTestCoverageVerification {
             }
         }
     }
-}
-
-// Configure Shadow plugin for executable JAR
-tasks.shadowJar {
-    archiveBaseName.set("po-toolbox")
-    archiveClassifier.set("")
-    archiveVersion.set("1.0.0")
-    manifest {
-        attributes["Main-Class"] = "fr.nicolaslinard.po.toolbox.MainKt"
-    }
-    mergeServiceFiles()
 }
