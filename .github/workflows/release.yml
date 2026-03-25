@@ -61,22 +61,25 @@ jobs:
         env:
           JFX_PLATFORM: ${{ matrix.platform }}
 
-      - name: Find shadow JAR
-        id: find_jar
+      - name: Prepare build info
+        id: build_info
         shell: bash
         run: |
           JAR_PATH=$(ls build/libs/po-toolbox-*-${{ matrix.platform }}*.jar 2>/dev/null | grep -v sources | head -1)
+          APP_VERSION="${{ github.ref_name }}"
+          APP_VERSION="${APP_VERSION#v}"
           echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
-          echo "Found JAR: $JAR_PATH"
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "Found JAR: $JAR_PATH, version: $APP_VERSION"
 
       - name: Package with jpackage (Linux)
         if: matrix.platform == 'linux'
         run: |
           jpackage \
             --input build/libs \
-            --main-jar $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+            --main-jar $(basename ${{ steps.build_info.outputs.jar_path }}) \
             --name PO-Toolbox \
-            --app-version ${{ github.ref_name }} \
+            --app-version ${{ steps.build_info.outputs.app_version }} \
             --type app-image \
             --dest build/package \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
@@ -89,9 +92,9 @@ jobs:
         run: |
           jpackage \
             --input build/libs \
-            --main-jar $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+            --main-jar $(basename ${{ steps.build_info.outputs.jar_path }}) \
             --name PO-Toolbox \
-            --app-version ${{ github.ref_name }} \
+            --app-version ${{ steps.build_info.outputs.app_version }} \
             --type app-image \
             --dest build/package \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
@@ -103,9 +106,9 @@ jobs:
         run: |
           jpackage \
             --input build/libs \
-            --main-jar $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+            --main-jar $(basename ${{ steps.build_info.outputs.jar_path }}) \
             --name PO-Toolbox \
-            --app-version ${{ github.ref_name }} \
+            --app-version ${{ steps.build_info.outputs.app_version }} \
             --type app-image \
             --dest build/package \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
