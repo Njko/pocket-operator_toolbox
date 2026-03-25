@@ -181,7 +181,16 @@ jobs:
 
             **Windows :** décompresser le zip, puis lancer `PO-Toolbox\PO-Toolbox.exe`
 
-            **macOS :** décompresser, puis ouvrir `PO-Toolbox.app`
+            **macOS :**
+            ```bash
+            tar xzf PO-Toolbox-macos-arm64.tar.gz
+            # Supprimer le blocage Gatekeeper (app non signée)
+            xattr -cr PO-Toolbox.app
+            open PO-Toolbox.app
+            ```
+            > **Note macOS :** L'app n'est pas signée avec un certificat Apple Developer.
+            > Si vous voyez l'alerte « Apple n'a pas pu confirmer... », faites clic droit > Ouvrir,
+            > ou exécutez `xattr -cr` comme indiqué ci-dessus pour retirer le blocage.
 
             ### JARs (alternative, nécessite Java 21+)
 
@@ -192,5 +201,7 @@ jobs:
             | macOS ARM64 | `po-toolbox-*-mac.jar` |
 
             ```bash
+            # macOS : retirer le blocage Gatekeeper avant de lancer le JAR
+            xattr -cr po-toolbox-*.jar
             java --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -jar po-toolbox-*.jar
             ```
