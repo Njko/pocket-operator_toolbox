@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.3.20"
     application
     jacoco // Code coverage reporting
+    id("com.gradleup.shadow") version "9.0.0-beta12"
 }
 
 group = "fr.nicolaslinard.po.toolbox"
@@ -12,7 +13,21 @@ repositories {
 }
 
 val jfxVersion = "24.0.1"
-val jfxClassifier = "linux-aarch64"
+
+// JavaFX classifier: set via -PjfxPlatform=win or env JFX_PLATFORM, default auto-detect
+val jfxClassifier: String = (findProperty("jfxPlatform") as? String)
+    ?: System.getenv("JFX_PLATFORM")
+    ?: run {
+        val os = System.getProperty("os.name").lowercase()
+        val arch = System.getProperty("os.arch").lowercase()
+        when {
+            os.contains("win") -> "win"
+            os.contains("mac") && arch.contains("aarch64") -> "mac-aarch64"
+            os.contains("mac") -> "mac"
+            arch.contains("aarch64") || arch.contains("arm64") -> "linux-aarch64"
+            else -> "linux"
+        }
+    }
 
 dependencies {
     // Kotlin standard library
@@ -21,7 +36,7 @@ dependencies {
     // JSON support
     implementation("org.json:json:20250517")
 
-    // JavaFX (linux-aarch64 for Raspberry Pi)
+    // JavaFX (platform-specific, set by jfxClassifier)
     implementation("org.openjfx:javafx-base:$jfxVersion:$jfxClassifier")
     implementation("org.openjfx:javafx-graphics:$jfxVersion:$jfxClassifier")
     implementation("org.openjfx:javafx-controls:$jfxVersion:$jfxClassifier")
@@ -91,5 +106,18 @@ tasks.jacocoTestCoverageVerification {
                 minimum = "0.80".toBigDecimal() // 80% coverage on non-UI code
             }
         }
+    }
+}
+
+// Shadow JAR: fat JAR with all dependencies, named by platform
+tasks.shadowJar {
+    archiveBaseName.set("po-toolbox")
+    archiveClassifier.set(jfxClassifier)
+    mergeServiceFiles()
+    manifest {
+        attributes(
+            "Main-Class" to "fr.nicolaslinard.po.toolbox.desktop.POToolboxAppKt",
+            "Add-Opens" to "java.base/java.lang java.base/java.lang.reflect"
+        )
     }
 }

@@ -37,13 +37,19 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
+        env:
+          JFX_PLATFORM: linux
 
       - name: Generate coverage report
         if: always()
         run: ./gradlew jacocoTestReport
+        env:
+          JFX_PLATFORM: linux
 
       - name: Check coverage threshold
         run: ./gradlew jacocoTestCoverageVerification
+        env:
+          JFX_PLATFORM: linux
 
       - name: Upload test report
         if: always()
@@ -63,6 +69,8 @@ jobs:
 
       - name: Build application
         run: ./gradlew jar
+        env:
+          JFX_PLATFORM: linux
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
