@@ -2,6 +2,7 @@ package fr.nicolaslinard.po.toolbox.desktop
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableColumn
+import javafx.scene.input.MouseButton
 import javafx.scene.layout.Priority
 import tornadofx.View
 import tornadofx.label
@@ -47,6 +48,14 @@ class PatternListView : View() {
 
             selectionModel.selectedItemProperty().addListener { _, _, newValue ->
                 controller.selectPattern(newValue)
+            }
+
+            setOnMouseClicked { event ->
+                if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
+                    val summary = selectionModel.selectedItem ?: return@setOnMouseClicked
+                    val updatedPattern = NewPatternDialog(summary.pattern).show() ?: return@setOnMouseClicked
+                    controller.updatePattern(summary.file, updatedPattern)
+                }
             }
 
             vgrow = Priority.ALWAYS
