@@ -2,7 +2,9 @@ package fr.nicolaslinard.po.toolbox.desktop
 
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import javafx.animation.AnimationTimer
 import javafx.geometry.Pos
+import javafx.scene.control.Label
 import javafx.scene.layout.Priority
 import tornadofx.View
 import tornadofx.dynamicContent
@@ -16,6 +18,10 @@ import tornadofx.vgrow
 class PatternDetailView : View() {
 
     private val controller: PatternController by inject()
+    private val playbackController = SharedPlaybackController.instance
+    private val stepLabels = mutableMapOf<Int, MutableList<Label>>()
+    private var lastHighlightedStep = 0
+    private var animationTimer: AnimationTimer? = null
 
     override val root = scrollpane {
         isFitToWidth = true
@@ -35,6 +41,50 @@ class PatternDetailView : View() {
                 }
             }
         }
+    }
+
+    private fun startStepHighlightTimer() {
+        animationTimer?.stop()
+        animationTimer = object : AnimationTimer() {
+            override fun handle(now: Long) {
+                if (!playbackController.isPlaying) {
+                    if (lastHighlightedStep != 0) {
+                        clearHighlight()
+                    }
+                    return
+                }
+                val step = playbackController.currentStep
+                if (step != lastHighlightedStep) {
+                    // Remove highlight from previous step
+                    if (lastHighlightedStep in 1..16) {
+                        stepLabels[lastHighlightedStep]?.forEach {
+                            it.styleClass.removeAll { cls -> cls == "step-playing" }
+                        }
+                    }
+                    // Add highlight to current step
+                    if (step in 1..16) {
+                        stepLabels[step]?.forEach {
+                            it.styleClass.add("step-playing")
+                        }
+                    }
+                    lastHighlightedStep = step
+                }
+            }
+        }
+        animationTimer?.start()
+    }
+
+    private fun clearHighlight() {
+        if (lastHighlightedStep in 1..16) {
+            stepLabels[lastHighlightedStep]?.forEach {
+                it.styleClass.removeAll { cls -> cls == "step-playing" }
+            }
+        }
+        lastHighlightedStep = 0
+    }
+
+    override fun onUndock() {
+        animationTimer?.stop()
     }
 
     private fun javafx.scene.layout.Pane.renderPattern(pattern: PO12Pattern) {
@@ -69,6 +119,10 @@ class PatternDetailView : View() {
             styleClass.add("h2")
         }
 
+        // Clear step labels for highlight tracking
+        stepLabels.clear()
+        (1..16).forEach { stepLabels[it] = mutableListOf() }
+
         // Step header with beat grouping
         hbox(0.0) {
             alignment = Pos.CENTER_LEFT
@@ -78,6 +132,7 @@ class PatternDetailView : View() {
                     prefWidth = 22.0
                     alignment = Pos.CENTER
                     styleClass.add("step-header")
+                    stepLabels[step]?.add(this)
                 }
                 // Beat separator after every 4 steps
                 if (step % 4 == 0 && step < 16) {
@@ -107,6 +162,7 @@ class PatternDetailView : View() {
                             prefWidth = 22.0
                             alignment = Pos.CENTER
                             styleClass.add(if (active) "step-active" else "step-inactive")
+                            stepLabels[step]?.add(this)
                         }
                         if (step % 4 == 0 && step < 16) {
                             label("") {
@@ -118,6 +174,9 @@ class PatternDetailView : View() {
                 }
             }
         }
+
+        // Start animation timer for step highlighting
+        startStepHighlightTimer()
 
         separator()
 

@@ -48,7 +48,7 @@ class MidiExporter(
     /**
      * Create a MIDI sequence from patterns.
      */
-    private fun createSequence(
+    fun createSequence(
         patterns: List<PO12Pattern>,
         options: MidiExportOptions
     ): Sequence {

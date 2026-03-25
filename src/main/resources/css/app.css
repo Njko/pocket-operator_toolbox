@@ -292,6 +292,34 @@
     -fx-border-width: 0 1 0 0;
 }
 
+/* === Playback controls === */
+.button.playback {
+    -fx-background-color: #14b8a6;
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+}
+.button.playback:hover {
+    -fx-background-color: #2dd4bf;
+}
+.button.playback:pressed {
+    -fx-background-color: #0d9488;
+}
+.toggle-button.loop-toggle:selected {
+    -fx-background-color: #f59e0b;
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+}
+
+/* === Playback step indicator === */
+.step-playing {
+    -fx-background-color: #14b8a640;
+    -fx-background-radius: 2;
+}
+.step-header.step-playing {
+    -fx-text-fill: #14b8a6;
+    -fx-font-weight: bold;
+}
+
 /* === Difficulty badges === */
 .difficulty-beginner { -fx-text-fill: #34d399; }
 .difficulty-intermediate { -fx-text-fill: #fbbf24; }

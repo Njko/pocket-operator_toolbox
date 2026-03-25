@@ -12,6 +12,11 @@ class POToolboxApp : App(MainView::class) {
         val css = javaClass.getResource("/css/app.css")?.toExternalForm()
         if (css != null) stage.scene.stylesheets.add(css)
     }
+
+    override fun stop() {
+        SharedPlaybackController.instance.dispose()
+        super.stop()
+    }
 }
 
 fun main(args: Array<String>) {

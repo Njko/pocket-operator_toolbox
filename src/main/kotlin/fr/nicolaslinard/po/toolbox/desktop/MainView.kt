@@ -9,6 +9,7 @@ import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.control.MenuItem
 import javafx.scene.control.Separator
+import javafx.scene.control.ToggleButton
 import javafx.scene.control.Tooltip
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
@@ -19,6 +20,7 @@ import tornadofx.splitpane
 class MainView : View("PO-12 Toolbox") {
 
     private val controller: PatternController by inject()
+    private val playbackController = SharedPlaybackController.instance
 
     private fun createNewPattern() {
         val pattern = NewPatternDialog().show() ?: return
@@ -111,6 +113,47 @@ class MainView : View("PO-12 Toolbox") {
                     disableProperty().bind(controller.selectedSummary.isNull)
                     setOnAction { deleteSelectedPattern() }
                 })
+
+                children.add(Separator(javafx.geometry.Orientation.VERTICAL))
+
+                val playButton = Button("Play").apply {
+                    styleClass.add("playback")
+                    tooltip = Tooltip("Lire le pattern sélectionné")
+                    disableProperty().bind(controller.selectedSummary.isNull)
+                    setOnAction {
+                        if (playbackController.isPlaying) {
+                            playbackController.stop()
+                            text = "Play"
+                        } else {
+                            val pattern = controller.selectedPattern.value ?: return@setOnAction
+                            try {
+                                playbackController.play(pattern)
+                                text = "Stop"
+                            } catch (e: Exception) {
+                                Alert(Alert.AlertType.ERROR).apply {
+                                    title = "Erreur de lecture"
+                                    headerText = "Impossible de lire le pattern"
+                                    contentText = "Le synthétiseur MIDI n'est pas disponible sur ce système."
+                                }.showAndWait()
+                            }
+                        }
+                    }
+                }
+                children.add(playButton)
+
+                // Reset play button when playback ends naturally
+                playbackController.onPlaybackStopped = {
+                    javafx.application.Platform.runLater {
+                        playButton.text = "Play"
+                    }
+                }
+
+                children.add(ToggleButton("Loop").apply {
+                    styleClass.add("loop-toggle")
+                    tooltip = Tooltip("Lecture en boucle")
+                    disableProperty().bind(controller.selectedSummary.isNull)
+                    setOnAction { playbackController.toggleLoop() }
+                })
             })
         }
 
@@ -123,5 +166,8 @@ class MainView : View("PO-12 Toolbox") {
 
     override fun onDock() {
         controller.loadPatterns()
+        controller.selectedPattern.addListener { _, _, _ ->
+            playbackController.stop()
+        }
     }
 }

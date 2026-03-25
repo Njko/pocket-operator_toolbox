@@ -314,6 +314,20 @@ class MidiExporterTest {
         assertTrue(options.includeMetadata)
     }
 
+    // === createSequence public API ===
+
+    @Test
+    fun `should expose createSequence for playback use`() {
+        val pattern = TestFixtures.createSimplePattern()
+        val exporter = MidiExporter()
+        val options = MidiExportOptions()
+
+        val sequence = exporter.createSequence(listOf(pattern), options)
+
+        assertNotNull(sequence)
+        assertTrue(sequence.tracks.isNotEmpty())
+    }
+
     @Test
     fun `should include pattern metadata in MIDI file`() {
         val pattern = PO12Pattern(
