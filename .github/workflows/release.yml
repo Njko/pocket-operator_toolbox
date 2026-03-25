@@ -15,9 +15,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             label: Linux (x64)
+            archive_ext: tar.gz
           - os: windows-latest
             platform: win
             label: Windows (x64)
+            archive_ext: zip
+          - os: macos-latest
+            platform: mac
+            label: macOS (ARM64)
+            archive_ext: tar.gz
 
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.label }}
@@ -55,11 +61,68 @@ jobs:
         env:
           JFX_PLATFORM: ${{ matrix.platform }}
 
-      - name: Upload platform artifact
+      - name: Find shadow JAR
+        id: find_jar
+        shell: bash
+        run: |
+          JAR_PATH=$(ls build/libs/po-toolbox-*-${{ matrix.platform }}*.jar 2>/dev/null | grep -v sources | head -1)
+          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+          echo "Found JAR: $JAR_PATH"
+
+      - name: Package with jpackage (Linux)
+        if: matrix.platform == 'linux'
+        run: |
+          jpackage \
+            --input build/libs \
+            --main-jar $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+            --name PO-Toolbox \
+            --app-version ${{ github.ref_name }} \
+            --type app-image \
+            --dest build/package \
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+          tar -czf build/PO-Toolbox-linux-x64.tar.gz -C build/package PO-Toolbox
+
+      - name: Package with jpackage (Windows)
+        if: matrix.platform == 'win'
+        shell: bash
+        run: |
+          jpackage \
+            --input build/libs \
+            --main-jar $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+            --name PO-Toolbox \
+            --app-version ${{ github.ref_name }} \
+            --type app-image \
+            --dest build/package \
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+          cd build/package && 7z a -tzip ../PO-Toolbox-windows-x64.zip PO-Toolbox
+
+      - name: Package with jpackage (macOS)
+        if: matrix.platform == 'mac'
+        run: |
+          jpackage \
+            --input build/libs \
+            --main-jar $(basename ${{ steps.find_jar.outputs.jar_path }}) \
+            --name PO-Toolbox \
+            --app-version ${{ github.ref_name }} \
+            --type app-image \
+            --dest build/package \
+            --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
+            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+          tar -czf build/PO-Toolbox-macos-arm64.tar.gz -C build/package PO-Toolbox.app
+
+      - name: Upload executable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: po-toolbox-${{ matrix.platform }}
-          path: build/libs/po-toolbox-*-${{ matrix.platform }}.jar
+          name: po-toolbox-exe-${{ matrix.platform }}
+          path: build/PO-Toolbox-*
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: po-toolbox-jar-${{ matrix.platform }}
+          path: build/libs/po-toolbox-*-${{ matrix.platform }}*.jar
 
   release:
     needs: build
@@ -76,31 +139,52 @@ jobs:
           path: artifacts
 
       - name: List artifacts
-        run: find artifacts -type f -name "*.jar"
+        run: find artifacts -type f
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            artifacts/po-toolbox-linux/*.jar
-            artifacts/po-toolbox-win/*.jar
+            artifacts/po-toolbox-exe-linux/*
+            artifacts/po-toolbox-exe-win/*
+            artifacts/po-toolbox-exe-mac/*
+            artifacts/po-toolbox-jar-linux/*.jar
+            artifacts/po-toolbox-jar-win/*.jar
+            artifacts/po-toolbox-jar-mac/*.jar
           body: |
             ## PO-12 Toolbox ${{ github.ref_name }}
 
             Application desktop pour créer et gérer des patterns pour le Pocket Operator PO-12.
 
-            ### Téléchargement
+            ### Exécutables (recommandé)
+
+            Téléchargez, décompressez et lancez — **aucune installation de Java requise**.
+
+            | Plateforme | Fichier | Contenu |
+            |------------|---------|---------|
+            | Linux x64 | `PO-Toolbox-linux-x64.tar.gz` | Exécutable natif |
+            | Windows x64 | `PO-Toolbox-windows-x64.zip` | `PO-Toolbox.exe` |
+            | macOS ARM64 | `PO-Toolbox-macos-arm64.tar.gz` | `PO-Toolbox.app` |
+
+            **Linux :**
+            ```bash
+            tar xzf PO-Toolbox-linux-x64.tar.gz
+            ./PO-Toolbox/bin/PO-Toolbox
+            ```
+
+            **Windows :** décompresser le zip, puis lancer `PO-Toolbox\PO-Toolbox.exe`
+
+            **macOS :** décompresser, puis ouvrir `PO-Toolbox.app`
+
+            ### JARs (alternative, nécessite Java 21+)
 
             | Plateforme | Fichier |
             |------------|---------|
-            | Linux (x64) | `po-toolbox-*-linux.jar` |
-            | Windows (x64) | `po-toolbox-*-win.jar` |
+            | Linux x64 | `po-toolbox-*-linux.jar` |
+            | Windows x64 | `po-toolbox-*-win.jar` |
+            | macOS ARM64 | `po-toolbox-*-mac.jar` |
 
-            ### Prérequis
-            - **Java 21+** installé ([Télécharger](https://adoptium.net/))
-
-            ### Lancement
             ```bash
             java --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -jar po-toolbox-*.jar
             ```

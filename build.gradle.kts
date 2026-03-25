@@ -15,19 +15,29 @@ repositories {
 val jfxVersion = "24.0.1"
 
 // JavaFX classifier: set via -PjfxPlatform=win or env JFX_PLATFORM, default auto-detect
-val jfxClassifier: String = (findProperty("jfxPlatform") as? String)
-    ?: System.getenv("JFX_PLATFORM")
-    ?: run {
+val jfxClassifier: String = run {
+    val explicit = (findProperty("jfxPlatform") as? String) ?: System.getenv("JFX_PLATFORM")
+    if (explicit != null) {
+        // Map short platform names to full JavaFX classifiers
+        val os = System.getProperty("os.name").lowercase()
+        val arch = System.getProperty("os.arch").lowercase()
+        when (explicit) {
+            "mac" -> if (arch.contains("aarch64") || arch.contains("arm64")) "mac-aarch64" else "mac"
+            else -> explicit
+        }
+    } else {
+        // Auto-detect from current system
         val os = System.getProperty("os.name").lowercase()
         val arch = System.getProperty("os.arch").lowercase()
         when {
             os.contains("win") -> "win"
-            os.contains("mac") && arch.contains("aarch64") -> "mac-aarch64"
+            os.contains("mac") && (arch.contains("aarch64") || arch.contains("arm64")) -> "mac-aarch64"
             os.contains("mac") -> "mac"
             arch.contains("aarch64") || arch.contains("arm64") -> "linux-aarch64"
             else -> "linux"
         }
     }
+}
 
 dependencies {
     // Kotlin standard library
