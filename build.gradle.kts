@@ -66,11 +66,29 @@ tasks.jacocoTestReport {
     }
 }
 
+// Exclude desktop UI classes from coverage (untestable without TestFX)
+val jacocoExcludes = listOf(
+    "fr/nicolaslinard/po/toolbox/desktop/**"
+)
+
+tasks.jacocoTestReport {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) { exclude(jacocoExcludes) }
+        })
+    )
+}
+
 tasks.jacocoTestCoverageVerification {
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) { exclude(jacocoExcludes) }
+        })
+    )
     violationRules {
         rule {
             limit {
-                minimum = "0.80".toBigDecimal() // 80% coverage minimum
+                minimum = "0.80".toBigDecimal() // 80% coverage on non-UI code
             }
         }
     }

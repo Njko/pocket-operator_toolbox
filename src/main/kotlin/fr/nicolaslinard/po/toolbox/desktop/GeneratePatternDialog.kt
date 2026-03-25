@@ -1,9 +1,8 @@
 package fr.nicolaslinard.po.toolbox.desktop
 
-import fr.nicolaslinard.po.toolbox.models.BuiltInTemplates
+import fr.nicolaslinard.po.toolbox.models.Difficulty
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
-import fr.nicolaslinard.po.toolbox.models.PatternMetadata
 import fr.nicolaslinard.po.toolbox.models.PatternTemplate
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -14,7 +13,7 @@ import javafx.scene.layout.VBox
 
 class GeneratePatternDialog {
 
-    private var selectedTemplate: PatternTemplate? = null
+    val model = GeneratePatternDialogModel()
     private val previewBox = VBox(2.0)
 
     fun show(): PO12Pattern? {
@@ -36,11 +35,10 @@ class GeneratePatternDialog {
         createButton.isDisable = true
 
         dialog.setResultConverter { bt ->
-            if (bt == createType) buildPatternFromTemplate() else null
+            if (bt == createType) model.buildPattern() else null
         }
 
-        // Will be enabled when a template is selected
-        val enableCreate = { createButton.isDisable = selectedTemplate == null }
+        val enableCreate = { createButton.isDisable = !model.canCreate() }
 
         buildCategoryList(enableCreate)
 
@@ -54,7 +52,7 @@ class GeneratePatternDialog {
         // Left: category list
         categoryList = ListView<String>().apply {
             prefWidth = 160.0
-            items.addAll(BuiltInTemplates.CATEGORIES.values)
+            items.addAll(model.categories.values)
         }
 
         // Center: template list
@@ -121,19 +119,16 @@ class GeneratePatternDialog {
         // Category selection updates template list
         categoryList.selectionModel.selectedItemProperty().addListener { _, _, displayName ->
             if (displayName == null) return@addListener
-            val categoryKey = BuiltInTemplates.CATEGORIES.entries
-                .find { it.value == displayName }?.key ?: return@addListener
-            val templates = BuiltInTemplates.byCategory(categoryKey)
+            val templates = model.selectCategory(displayName)
             templateList.items.setAll(templates)
             templateList.selectionModel.clearSelection()
-            selectedTemplate = null
             previewBox.children.clear()
             onTemplateSelected()
         }
 
         // Template selection updates preview
         templateList.selectionModel.selectedItemProperty().addListener { _, _, template ->
-            selectedTemplate = template
+            model.selectTemplate(template)
             renderPreview(template)
             onTemplateSelected()
         }
@@ -194,28 +189,11 @@ class GeneratePatternDialog {
         }
     }
 
-    private fun buildPatternFromTemplate(): PO12Pattern? {
-        val template = selectedTemplate ?: return null
-        return PO12Pattern(
-            voices = template.voices,
-            metadata = PatternMetadata(
-                name = template.name,
-                bpm = template.suggestedBPM,
-                genre = listOf(
-                    BuiltInTemplates.CATEGORIES[template.category] ?: template.category
-                ),
-                difficulty = template.difficulty
-            ),
-            number = 1
-        )
-    }
-
     private fun difficultyColor(template: PatternTemplate): String {
-        return when (template.difficulty.displayName) {
-            "beginner" -> "#55aa55"
-            "intermediate" -> "#cc9933"
-            "advanced" -> "#cc5555"
-            else -> "gray"
+        return when (template.difficulty) {
+            Difficulty.BEGINNER -> "#55aa55"
+            Difficulty.INTERMEDIATE -> "#cc9933"
+            Difficulty.ADVANCED -> "#cc5555"
         }
     }
 }

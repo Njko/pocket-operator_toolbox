@@ -1,0 +1,298 @@
+/* PO-12 Toolbox — Modern Dark Theme */
+
+/* === Root palette === */
+.root {
+    -fx-base: #1f2937;
+    -fx-background: #111827;
+    -fx-control-inner-background: #1f2937;
+    -fx-control-inner-background-alt: #172033;
+    -fx-accent: #14b8a6;
+    -fx-focus-color: #14b8a680;
+    -fx-faint-focus-color: transparent;
+    -fx-text-fill: #e5e7eb;
+    -fx-font-family: "System";
+    -fx-font-size: 12px;
+}
+
+/* === Menu bar === */
+.menu-bar {
+    -fx-background-color: #111827;
+    -fx-border-color: transparent transparent #374151 transparent;
+}
+.menu-bar .menu {
+    -fx-text-fill: #d1d5db;
+}
+.menu-bar .menu:hover,
+.menu-bar .menu:showing {
+    -fx-background-color: #374151;
+}
+.menu-item {
+    -fx-text-fill: #d1d5db;
+}
+.menu-item:hover,
+.menu-item:focused {
+    -fx-background-color: #374151;
+}
+.menu-item:disabled {
+    -fx-opacity: 0.4;
+}
+
+/* === Toolbar === */
+.toolbar {
+    -fx-background-color: #1a2234;
+    -fx-border-color: transparent transparent #374151 transparent;
+    -fx-padding: 6 10 6 10;
+}
+
+/* === Buttons === */
+.button {
+    -fx-background-color: #374151;
+    -fx-text-fill: #e5e7eb;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+.button:hover {
+    -fx-background-color: #4b5563;
+}
+.button:pressed {
+    -fx-background-color: #1f2937;
+}
+.button:disabled {
+    -fx-opacity: 0.35;
+    -fx-cursor: default;
+}
+
+.button.primary {
+    -fx-background-color: #14b8a6;
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+}
+.button.primary:hover {
+    -fx-background-color: #2dd4bf;
+}
+.button.primary:pressed {
+    -fx-background-color: #0d9488;
+}
+
+.button.danger {
+    -fx-text-fill: #fca5a5;
+}
+.button.danger:hover {
+    -fx-background-color: #7f1d1d;
+}
+
+/* === Table view === */
+.table-view {
+    -fx-background-color: #111827;
+    -fx-border-color: #374151;
+}
+.table-view .column-header-background {
+    -fx-background-color: #1a2234;
+}
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #374151 transparent;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #9ca3af;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.table-row-cell {
+    -fx-background-color: #111827;
+    -fx-border-color: transparent transparent #1f2937 transparent;
+}
+.table-row-cell:odd {
+    -fx-background-color: #151e2e;
+}
+.table-row-cell:selected {
+    -fx-background-color: #14b8a630;
+}
+.table-row-cell:hover {
+    -fx-background-color: #1f293780;
+}
+.table-row-cell:selected:hover {
+    -fx-background-color: #14b8a650;
+}
+.table-cell {
+    -fx-text-fill: #d1d5db;
+    -fx-font-size: 11px;
+}
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #f3f4f6;
+}
+
+/* === Scroll pane === */
+.scroll-pane {
+    -fx-background-color: #111827;
+}
+.scroll-pane .viewport {
+    -fx-background-color: #111827;
+}
+.scroll-bar {
+    -fx-background-color: #1f2937;
+}
+.scroll-bar .thumb {
+    -fx-background-color: #374151;
+    -fx-background-radius: 4;
+}
+.scroll-bar .thumb:hover {
+    -fx-background-color: #4b5563;
+}
+
+/* === Split pane === */
+.split-pane {
+    -fx-background-color: #111827;
+}
+.split-pane-divider {
+    -fx-background-color: #374151;
+    -fx-padding: 0 1 0 1;
+}
+
+/* === Labels === */
+.label {
+    -fx-text-fill: #d1d5db;
+}
+.label.h1 {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f3f4f6;
+}
+.label.h2 {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #e5e7eb;
+}
+.label.muted {
+    -fx-text-fill: #9ca3af;
+}
+
+/* === Separator === */
+.separator .line {
+    -fx-border-color: #374151;
+}
+
+/* === Text field, Spinner, ComboBox === */
+.text-field, .spinner, .combo-box {
+    -fx-background-color: #1f2937;
+    -fx-text-fill: #e5e7eb;
+    -fx-border-color: #374151;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-prompt-text-fill: #6b7280;
+}
+.text-field:focused, .spinner:focused, .combo-box:focused {
+    -fx-border-color: #14b8a6;
+}
+.combo-box .list-cell {
+    -fx-text-fill: #e5e7eb;
+}
+.combo-box-popup .list-view {
+    -fx-background-color: #1f2937;
+}
+.combo-box-popup .list-cell {
+    -fx-text-fill: #e5e7eb;
+    -fx-background-color: #1f2937;
+}
+.combo-box-popup .list-cell:hover {
+    -fx-background-color: #374151;
+}
+
+/* === Toggle buttons (step grid) === */
+.toggle-button {
+    -fx-background-color: #374151;
+    -fx-text-fill: #6b7280;
+    -fx-font-family: monospace;
+    -fx-font-size: 11px;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-padding: 2;
+    -fx-cursor: hand;
+}
+.toggle-button:hover {
+    -fx-background-color: #4b5563;
+}
+.toggle-button:selected {
+    -fx-background-color: #14b8a6;
+    -fx-text-fill: #111827;
+    -fx-font-weight: bold;
+}
+.toggle-button:selected:hover {
+    -fx-background-color: #2dd4bf;
+}
+
+/* === List view (template browser) === */
+.list-view {
+    -fx-background-color: #111827;
+    -fx-border-color: #374151;
+}
+.list-cell {
+    -fx-background-color: #111827;
+    -fx-text-fill: #d1d5db;
+}
+.list-cell:odd {
+    -fx-background-color: #151e2e;
+}
+.list-cell:selected {
+    -fx-background-color: #14b8a630;
+}
+.list-cell:hover {
+    -fx-background-color: #1f293780;
+}
+
+/* === Dialog pane === */
+.dialog-pane {
+    -fx-background-color: #111827;
+}
+.dialog-pane .header-panel {
+    -fx-background-color: #1a2234;
+}
+.dialog-pane .button-bar .button {
+    -fx-background-color: #374151;
+    -fx-text-fill: #e5e7eb;
+}
+.dialog-pane .button-bar .button:hover {
+    -fx-background-color: #4b5563;
+}
+
+/* === Tooltip === */
+.tooltip {
+    -fx-background-color: #374151;
+    -fx-text-fill: #e5e7eb;
+    -fx-background-radius: 4;
+    -fx-font-size: 11px;
+}
+
+/* === Step grid: beat grouping === */
+.step-header {
+    -fx-font-size: 10px;
+    -fx-text-fill: #6b7280;
+    -fx-font-family: monospace;
+}
+.step-active {
+    -fx-font-family: monospace;
+    -fx-font-size: 13px;
+    -fx-text-fill: #14b8a6;
+    -fx-font-weight: bold;
+}
+.step-inactive {
+    -fx-font-family: monospace;
+    -fx-font-size: 13px;
+    -fx-text-fill: #4b5563;
+}
+.voice-label {
+    -fx-font-family: monospace;
+    -fx-font-size: 11px;
+    -fx-text-fill: #9ca3af;
+}
+.beat-separator {
+    -fx-border-color: transparent #374151 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+/* === Difficulty badges === */
+.difficulty-beginner { -fx-text-fill: #34d399; }
+.difficulty-intermediate { -fx-text-fill: #fbbf24; }
+.difficulty-advanced { -fx-text-fill: #f87171; }

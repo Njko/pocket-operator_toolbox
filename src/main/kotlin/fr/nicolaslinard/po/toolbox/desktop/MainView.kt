@@ -82,22 +82,22 @@ class MainView : View("PO-12 Toolbox") {
             ))
 
             // Toolbar
-            children.add(HBox(4.0).apply {
-                padding = Insets(4.0, 8.0, 4.0, 8.0)
+            children.add(HBox(6.0).apply {
+                styleClass.add("toolbar")
                 alignment = Pos.CENTER_LEFT
-                style = "-fx-background-color: #2e2e2e; -fx-border-color: #444444; -fx-border-width: 0 0 1 0;"
 
-                children.add(Button("➕ Nouveau").apply {
+                children.add(Button("Nouveau").apply {
+                    styleClass.add("primary")
                     tooltip = Tooltip("Créer un nouveau pattern")
                     setOnAction { createNewPattern() }
                 })
 
-                children.add(Button("🎲 Générer").apply {
+                children.add(Button("Générer").apply {
                     tooltip = Tooltip("Générer un pattern depuis un style musical")
                     setOnAction { generatePattern() }
                 })
 
-                children.add(Button("✏️ Éditer").apply {
+                children.add(Button("Éditer").apply {
                     tooltip = Tooltip("Éditer le pattern sélectionné")
                     disableProperty().bind(controller.selectedSummary.isNull)
                     setOnAction { editSelectedPattern() }
@@ -105,7 +105,8 @@ class MainView : View("PO-12 Toolbox") {
 
                 children.add(Separator(javafx.geometry.Orientation.VERTICAL))
 
-                children.add(Button("🗑 Supprimer").apply {
+                children.add(Button("Supprimer").apply {
+                    styleClass.add("danger")
                     tooltip = Tooltip("Supprimer le pattern sélectionné")
                     disableProperty().bind(controller.selectedSummary.isNull)
                     setOnAction { deleteSelectedPattern() }

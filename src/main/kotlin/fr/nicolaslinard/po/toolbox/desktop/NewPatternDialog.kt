@@ -1,9 +1,7 @@
 package fr.nicolaslinard.po.toolbox.desktop
 
-import fr.nicolaslinard.po.toolbox.models.Difficulty
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
-import fr.nicolaslinard.po.toolbox.models.PatternMetadata
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -11,9 +9,9 @@ import javafx.scene.control.*
 import javafx.scene.layout.*
 import javafx.util.StringConverter
 
-class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
+class NewPatternDialog(existingPattern: PO12Pattern? = null) {
 
-    private val isEditMode = existingPattern != null
+    val model = NewPatternDialogModel(existingPattern)
 
     private val nameField = TextField().apply { promptText = "Nom du pattern (requis)" }
     private val patternNumberSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0 }
@@ -25,7 +23,7 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
 
     fun show(): PO12Pattern? {
         val dialog = Dialog<PO12Pattern?>()
-        dialog.title = if (isEditMode) "Éditer le pattern" else "Nouveau pattern"
+        dialog.title = if (model.isEditMode) "Éditer le pattern" else "Nouveau pattern"
         dialog.headerText = null
         dialog.isResizable = true
         val content = buildContent()
@@ -81,6 +79,7 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
             setOnAction {
                 voiceCombo.value?.let { v ->
                     if (!voiceRows.containsKey(v)) {
+                        model.addVoice(v)
                         addVoiceRow(v)
                         refreshVoiceCombo()
                     }
@@ -93,7 +92,7 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
         }
 
         val voicesLabel = Label("Grille des steps").apply {
-            style = "-fx-font-weight: bold; -fx-padding: 4 0 0 0;"
+            styleClass.add("h2")
         }
 
         // Step header
@@ -101,9 +100,9 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
             children.add(Label("").apply { prefWidth = 148.0 })
             (1..16).forEach { step ->
                 children.add(Label(step.toString()).apply {
-                    prefWidth = 30.0
+                    prefWidth = 32.0
                     alignment = Pos.CENTER
-                    style = "-fx-font-size: 10px; -fx-text-fill: gray;"
+                    styleClass.add("step-header")
                 })
             }
         }
@@ -115,16 +114,14 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
             VBox.setVgrow(this, Priority.ALWAYS)
         }
 
-        // Pre-fill in edit mode
-        existingPattern?.let { pattern ->
-            nameField.text = pattern.metadata.name
-            patternNumberSpinner.valueFactory.value = pattern.number
-            pattern.metadata.bpm?.let { bpmField.text = it.toString() }
-            pattern.metadata.difficulty?.let { difficultyCombo.value = it.displayName }
-                ?: run { difficultyCombo.value = "-" }
+        // Pre-fill from model
+        if (model.isEditMode) {
+            nameField.text = model.name
+            patternNumberSpinner.valueFactory.value = model.patternNumber
+            if (model.bpm.isNotEmpty()) bpmField.text = model.bpm
+            difficultyCombo.value = model.difficulty
 
-            // Add existing voices with their active steps
-            for ((voice, steps) in pattern.voices) {
+            for ((voice, steps) in model.voices) {
                 addVoiceRow(voice, steps)
             }
             refreshVoiceCombo()
@@ -140,13 +137,11 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
             val stepNumber = i + 1
             val isActive = stepNumber in activeSteps
             ToggleButton(if (isActive) "●" else "·").apply {
-                prefWidth = 30.0
-                prefHeight = 28.0
+                prefWidth = 32.0
+                prefHeight = 32.0
                 isSelected = isActive
-                style = stepStyle(isActive)
                 selectedProperty().addListener { _, _, on ->
                     text = if (on) "●" else "·"
-                    style = stepStyle(on)
                 }
                 tooltip = Tooltip("Step $stepNumber")
             }
@@ -154,8 +149,9 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
         voiceRows[voice] = toggles
 
         val removeBtn = Button("×").apply {
-            style = "-fx-text-fill: #cc4444; -fx-background-color: transparent; -fx-font-size: 13px; -fx-cursor: hand;"
+            styleClass.add("danger")
             setOnAction {
+                model.removeVoice(voice)
                 voiceRows.remove(voice)
                 voicesBox.children.removeIf { it.userData == voice }
                 refreshVoiceCombo()
@@ -168,7 +164,7 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
             children.add(Label("${voice.displayName} (%02d)".format(voice.poNumber)).apply {
                 prefWidth = 140.0
                 alignment = Pos.CENTER_RIGHT
-                style = "-fx-font-size: 11px; -fx-font-family: monospace;"
+                styleClass.add("voice-label")
             })
             toggles.forEach { children.add(it) }
             children.add(removeBtn)
@@ -183,29 +179,25 @@ class NewPatternDialog(private val existingPattern: PO12Pattern? = null) {
         else voicesBox.children.add(row)
     }
 
-    private fun stepStyle(active: Boolean) =
-        if (active) "-fx-background-color: #e07050; -fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 2;"
-        else "-fx-background-color: #555555; -fx-text-fill: #999999; -fx-font-size: 11px; -fx-padding: 2;"
-
     private fun refreshVoiceCombo() {
         val remaining = PO12DrumVoice.entries.filter { !voiceRows.containsKey(it) }
         voiceCombo.items.setAll(remaining)
         if (remaining.isNotEmpty()) voiceCombo.value = remaining.first()
     }
 
-    private fun buildPattern(): PO12Pattern {
-        val voices = voiceRows.mapValues { (_, toggles) ->
-            toggles.indices.filter { i -> toggles[i].isSelected }.map { it + 1 }
-        }.filter { (_, steps) -> steps.isNotEmpty() }
+    private fun syncModelFromUI() {
+        model.name = nameField.text
+        model.patternNumber = patternNumberSpinner.value
+        model.bpm = bpmField.text
+        model.difficulty = difficultyCombo.value
+        voiceRows.forEach { (voice, toggles) ->
+            val steps = toggles.indices.filter { i -> toggles[i].isSelected }.map { it + 1 }
+            model.setSteps(voice, steps)
+        }
+    }
 
-        return PO12Pattern(
-            voices = voices,
-            metadata = PatternMetadata(
-                name = nameField.text.trim(),
-                bpm = bpmField.text.trim().toIntOrNull(),
-                difficulty = Difficulty.fromString(difficultyCombo.value)
-            ),
-            number = patternNumberSpinner.value
-        )
+    private fun buildPattern(): PO12Pattern {
+        syncModelFromUI()
+        return model.buildPattern()
     }
 }
