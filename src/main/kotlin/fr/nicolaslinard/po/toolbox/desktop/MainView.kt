@@ -9,8 +9,10 @@ import javafx.scene.control.Menu
 import javafx.scene.control.MenuBar
 import javafx.scene.control.MenuItem
 import javafx.scene.control.Separator
+import javafx.scene.control.SeparatorMenuItem
 import javafx.scene.control.ToggleButton
 import javafx.scene.control.Tooltip
+import javafx.scene.input.KeyCombination
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import tornadofx.View
@@ -38,6 +40,20 @@ class MainView : View("PO-12 Toolbox") {
         controller.updatePattern(summary.file, updatedPattern)
     }
 
+    private fun openDocumentation(model: String) {
+        val url = if (model.isEmpty()) "https://teenage.engineering/products/po"
+                  else "https://teenage.engineering/guides/$model"
+        try {
+            java.awt.Desktop.getDesktop().browse(java.net.URI(url))
+        } catch (_: Exception) {
+            // Fallback silencieux si le navigateur n'est pas disponible
+        }
+    }
+
+    private fun openAccessibilitySettings() {
+        AccessibilityDialog().show()
+    }
+
     private fun deleteSelectedPattern() {
         val summary = controller.selectedSummary.value ?: return
         val alert = Alert(Alert.AlertType.CONFIRMATION)
@@ -56,11 +72,13 @@ class MainView : View("PO-12 Toolbox") {
         top = VBox().apply {
             // Menu bar
             val deleteMenuItem = MenuItem("Supprimer").apply {
+                accelerator = KeyCombination.keyCombination("Delete")
                 disableProperty().bind(controller.selectedSummary.isNull)
                 setOnAction { deleteSelectedPattern() }
             }
 
             val editMenuItem = MenuItem("Éditer").apply {
+                accelerator = KeyCombination.keyCombination("Ctrl+E")
                 disableProperty().bind(controller.selectedSummary.isNull)
                 setOnAction { editSelectedPattern() }
             }
@@ -69,15 +87,66 @@ class MainView : View("PO-12 Toolbox") {
                 Menu("Fichier").apply {
                     items.addAll(
                         MenuItem("Nouveau pattern").apply {
+                            accelerator = KeyCombination.keyCombination("Ctrl+N")
                             setOnAction { createNewPattern() }
                         },
                         MenuItem("Générer un pattern...").apply {
+                            accelerator = KeyCombination.keyCombination("Ctrl+G")
                             setOnAction { generatePattern() }
                         },
                         editMenuItem,
                         deleteMenuItem,
+                        SeparatorMenuItem(),
                         MenuItem("Actualiser").apply {
+                            accelerator = KeyCombination.keyCombination("F5")
                             setOnAction { controller.loadPatterns() }
+                        }
+                    )
+                },
+                Menu("Accessibilité").apply {
+                    items.add(MenuItem("Paramètres...").apply {
+                        accelerator = KeyCombination.keyCombination("Ctrl+Shift+A")
+                        setOnAction { openAccessibilitySettings() }
+                    })
+                },
+                Menu("Aide").apply {
+                    items.addAll(
+                        Menu("Guides Pocket Operator").apply {
+                            items.addAll(
+                                MenuItem("PO-12 Rhythm (Drum machine)").apply {
+                                    setOnAction { openDocumentation("po-12") }
+                                },
+                                MenuItem("PO-14 Sub (Synthé basse)").apply {
+                                    setOnAction { openDocumentation("po-14") }
+                                },
+                                MenuItem("PO-16 Factory (Synthé lead)").apply {
+                                    setOnAction { openDocumentation("po-16") }
+                                },
+                                SeparatorMenuItem(),
+                                MenuItem("PO-20 Arcade (Chiptune)").apply {
+                                    setOnAction { openDocumentation("po-20") }
+                                },
+                                MenuItem("PO-24 Office (Noise)").apply {
+                                    setOnAction { openDocumentation("po-24") }
+                                },
+                                MenuItem("PO-28 Robot (Synthé 8-bit)").apply {
+                                    setOnAction { openDocumentation("po-28") }
+                                },
+                                SeparatorMenuItem(),
+                                MenuItem("PO-32 Tonic (Drum synth)").apply {
+                                    setOnAction { openDocumentation("po-32") }
+                                },
+                                MenuItem("PO-33 K.O! (Sampler)").apply {
+                                    setOnAction { openDocumentation("po-33") }
+                                },
+                                MenuItem("PO-35 Speak (Synthé vocal)").apply {
+                                    setOnAction { openDocumentation("po-35") }
+                                }
+                            )
+                        },
+                        SeparatorMenuItem(),
+                        MenuItem("Site Teenage Engineering").apply {
+                            setOnAction { openDocumentation("") }
                         }
                     )
                 }
