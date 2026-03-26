@@ -20,8 +20,10 @@ class PatternDetailView : View() {
     private val controller: PatternController by inject()
     private val playbackController = SharedPlaybackController.instance
     private val stepLabels = mutableMapOf<Int, MutableList<Label>>()
+    private val stepVoiceLabels = mutableMapOf<Int, MutableList<Label>>()
     private var lastHighlightedStep = 0
     private var animationTimer: AnimationTimer? = null
+    private val stepAnimator = StepAnimator()
 
     override val root = scrollpane {
         isFitToWidth = true
@@ -55,17 +57,22 @@ class PatternDetailView : View() {
                 }
                 val step = playbackController.currentStep
                 if (step != lastHighlightedStep) {
-                    // Remove highlight from previous step
+                    // Remove highlight + animations from previous step
                     if (lastHighlightedStep in 1..16) {
-                        stepLabels[lastHighlightedStep]?.forEach {
+                        stepAnimator.clearAnimations()
+                        val prevLabels = stepLabels[lastHighlightedStep] ?: emptyList()
+                        prevLabels.forEach {
                             it.styleClass.removeAll { cls -> cls == "step-playing" }
                         }
                     }
-                    // Add highlight to current step
+                    // Add highlight to current step + pulse active dots + voice labels
                     if (step in 1..16) {
-                        stepLabels[step]?.forEach {
+                        val currentLabels = stepLabels[step] ?: emptyList()
+                        currentLabels.forEach {
                             it.styleClass.add("step-playing")
                         }
+                        stepAnimator.animateStep(currentLabels)
+                        stepAnimator.animateVoiceLabels(stepVoiceLabels[step] ?: emptyList())
                     }
                     lastHighlightedStep = step
                 }
@@ -75,6 +82,7 @@ class PatternDetailView : View() {
     }
 
     private fun clearHighlight() {
+        stepAnimator.clearAnimations()
         if (lastHighlightedStep in 1..16) {
             stepLabels[lastHighlightedStep]?.forEach {
                 it.styleClass.removeAll { cls -> cls == "step-playing" }
@@ -85,6 +93,7 @@ class PatternDetailView : View() {
 
     override fun onUndock() {
         animationTimer?.stop()
+        stepAnimator.clearAnimations()
     }
 
     private fun javafx.scene.layout.Pane.renderPattern(pattern: PO12Pattern) {
@@ -119,9 +128,14 @@ class PatternDetailView : View() {
             styleClass.add("h2")
         }
 
-        // Clear step labels for highlight tracking
+        // Clear animations and step labels for highlight tracking
+        stepAnimator.clearAnimations()
         stepLabels.clear()
-        (1..16).forEach { stepLabels[it] = mutableListOf() }
+        stepVoiceLabels.clear()
+        (1..16).forEach {
+            stepLabels[it] = mutableListOf()
+            stepVoiceLabels[it] = mutableListOf()
+        }
 
         // Step header with beat grouping
         hbox(0.0) {
@@ -150,11 +164,15 @@ class PatternDetailView : View() {
             if (steps.isNotEmpty()) {
                 hbox(0.0) {
                     alignment = Pos.CENTER_LEFT
-                    label("${voice.displayName} (%02d)".format(voice.poNumber)) {
+                    val voiceLabel = label("${voice.displayName} (%02d)".format(voice.poNumber)) {
                         prefWidth = 130.0
                         alignment = Pos.CENTER_RIGHT
                         styleClass.add("voice-label")
                         style = "-fx-padding: 0 6 0 0;"
+                    }
+                    // Register this voice label for each active step
+                    steps.forEach { step ->
+                        stepVoiceLabels[step]?.add(voiceLabel)
                     }
                     (1..16).forEach { step ->
                         val active = step in steps
