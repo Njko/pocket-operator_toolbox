@@ -75,18 +75,26 @@ jobs:
           echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
           echo "Found JAR: $JAR_PATH, version: $APP_VERSION"
 
+      - name: Prepare jpackage input
+        shell: bash
+        run: |
+          mkdir -p build/jpackage-input
+          cp ${{ steps.build_info.outputs.jar_path }} build/jpackage-input/
+
       - name: Package with jpackage (Linux)
         if: matrix.platform == 'linux'
         run: |
           jpackage \
-            --input build/libs \
+            --input build/jpackage-input \
             --main-jar $(basename ${{ steps.build_info.outputs.jar_path }}) \
             --name PO-Toolbox \
             --app-version ${{ steps.build_info.outputs.app_version }} \
             --type app-image \
             --dest build/package \
+            --icon src/main/resources/icons/icon.png \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED" \
+            --java-options "--enable-native-access=ALL-UNNAMED"
           tar -czf build/PO-Toolbox-linux-x64.tar.gz -C build/package PO-Toolbox
 
       - name: Package with jpackage (Windows)
@@ -94,28 +102,32 @@ jobs:
         shell: bash
         run: |
           jpackage \
-            --input build/libs \
+            --input build/jpackage-input \
             --main-jar $(basename ${{ steps.build_info.outputs.jar_path }}) \
             --name PO-Toolbox \
             --app-version ${{ steps.build_info.outputs.app_version }} \
             --type app-image \
             --dest build/package \
+            --icon src/main/resources/icons/icon.ico \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED" \
+            --java-options "--enable-native-access=ALL-UNNAMED"
           cd build/package && 7z a -tzip ../PO-Toolbox-windows-x64.zip PO-Toolbox
 
       - name: Package with jpackage (macOS)
         if: matrix.platform == 'mac'
         run: |
           jpackage \
-            --input build/libs \
+            --input build/jpackage-input \
             --main-jar $(basename ${{ steps.build_info.outputs.jar_path }}) \
             --name PO-Toolbox \
             --app-version ${{ steps.build_info.outputs.app_version }} \
             --type app-image \
             --dest build/package \
+            --icon src/main/resources/icons/icon.png \
             --java-options "--add-opens java.base/java.lang=ALL-UNNAMED" \
-            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED"
+            --java-options "--add-opens java.base/java.lang.reflect=ALL-UNNAMED" \
+            --java-options "--enable-native-access=ALL-UNNAMED"
           tar -czf build/PO-Toolbox-macos-arm64.tar.gz -C build/package PO-Toolbox.app
 
       - name: Upload executable artifact
@@ -159,9 +171,9 @@ jobs:
             artifacts/po-toolbox-jar-win/*.jar
             artifacts/po-toolbox-jar-mac/*.jar
           body: |
-            ## PO-12 Toolbox ${{ github.ref_name }}
+            ## Pocket Operator Toolbox ${{ github.ref_name }}
 
-            Application desktop pour créer et gérer des patterns pour le Pocket Operator PO-12.
+            Application desktop pour créer et gérer des patterns pour les Pocket Operators de Teenage Engineering.
 
             ### Exécutables (recommandé)
 

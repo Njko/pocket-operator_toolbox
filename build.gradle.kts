@@ -119,6 +119,48 @@ tasks.jacocoTestCoverageVerification {
     }
 }
 
+// jpackage: create native executable from fat JAR
+tasks.register<Exec>("jpackage") {
+    dependsOn(tasks.named("shadowJar"))
+    group = "distribution"
+    description = "Creates a native application bundle using jpackage"
+
+    val jarFile = layout.buildDirectory.file("libs/po-toolbox-${project.version}-${jfxClassifier}.jar")
+    val inputDir = layout.buildDirectory.dir("jpackage-input")
+    val outputDir = layout.buildDirectory.dir("package")
+    val os = System.getProperty("os.name").lowercase()
+    val iconPath = when {
+        os.contains("win") -> "src/main/resources/icons/icon.ico"
+        os.contains("mac") -> "src/main/resources/icons/icon.png"
+        else -> "src/main/resources/icons/icon.png"
+    }
+
+    doFirst {
+        // jpackage fails if destination exists — clean both the output dir and app subdirectory
+        File(outputDir.get().asFile, "PO-Toolbox").deleteRecursively()
+        File(outputDir.get().asFile, "PO-Toolbox.app").deleteRecursively()
+        inputDir.get().asFile.deleteRecursively()
+        inputDir.get().asFile.mkdirs()
+        jarFile.get().asFile.copyTo(
+            inputDir.get().file(jarFile.get().asFile.name).asFile, overwrite = true
+        )
+    }
+
+    commandLine(
+        "jpackage",
+        "--input", inputDir.get().asFile.absolutePath,
+        "--main-jar", jarFile.get().asFile.name,
+        "--name", "PO-Toolbox",
+        "--app-version", project.version.toString(),
+        "--type", "app-image",
+        "--dest", outputDir.get().asFile.absolutePath,
+        "--icon", iconPath,
+        "--java-options", "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--java-options", "--add-opens=java.base/java.lang.reflect=ALL-UNNAMED",
+        "--java-options", "--enable-native-access=ALL-UNNAMED"
+    )
+}
+
 // Shadow JAR: fat JAR with all dependencies, named by platform
 tasks.shadowJar {
     archiveBaseName.set("po-toolbox")

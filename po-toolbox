@@ -1,3 +1,17 @@
 #!/bin/bash
 # PO-Toolbox executable wrapper script (Linux/Mac)
-java -jar "$(dirname "$0")/build/libs/po-toolbox-1.0.0.jar" "$@"
+# Prefers native executable, falls back to JAR
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -x "$SCRIPT_DIR/build/package/PO-Toolbox/bin/PO-Toolbox" ]; then
+    exec "$SCRIPT_DIR/build/package/PO-Toolbox/bin/PO-Toolbox" "$@"
+elif [ -d "$SCRIPT_DIR/build/package/PO-Toolbox.app" ]; then
+    open "$SCRIPT_DIR/build/package/PO-Toolbox.app" --args "$@"
+else
+    JAR=$(ls "$SCRIPT_DIR"/build/libs/po-toolbox-*-linux.jar "$SCRIPT_DIR"/build/libs/po-toolbox-*-mac*.jar 2>/dev/null | head -1)
+    if [ -n "$JAR" ]; then
+        exec java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --enable-native-access=ALL-UNNAMED -jar "$JAR" "$@"
+    else
+        echo "Error: No JAR found in build/libs. Run: ./gradlew shadowJar"
+        exit 1
+    fi
+fi
