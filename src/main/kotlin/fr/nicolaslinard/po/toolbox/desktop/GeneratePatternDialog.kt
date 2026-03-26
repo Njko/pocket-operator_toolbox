@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox
 class GeneratePatternDialog {
 
     val model = GeneratePatternDialogModel()
+    private val sz = ScaledSize()
     private val previewBox = VBox(2.0)
 
     fun show(): PO12Pattern? {
@@ -23,8 +24,8 @@ class GeneratePatternDialog {
 
         val content = buildContent()
         dialog.dialogPane.content = content
-        dialog.dialogPane.prefWidth = 780.0
-        dialog.dialogPane.prefHeight = 550.0
+        dialog.dialogPane.prefWidth = sz.scale(780.0)
+        dialog.dialogPane.prefHeight = sz.dialogHeight
         content.prefHeightProperty().bind(dialog.dialogPane.heightProperty())
 
         // Apply accessibility theme to dialog
@@ -56,13 +57,13 @@ class GeneratePatternDialog {
     private fun buildContent(): VBox {
         // Left: category list
         categoryList = ListView<String>().apply {
-            prefWidth = 160.0
+            prefWidth = sz.scale(160.0)
             items.addAll(model.categories.values)
         }
 
         // Center: template list
         templateList = ListView<PatternTemplate>().apply {
-            prefWidth = 260.0
+            prefWidth = sz.scale(260.0)
             cellFactory = javafx.util.Callback {
                 object : ListCell<PatternTemplate>() {
                     override fun updateItem(item: PatternTemplate?, empty: Boolean) {
@@ -156,10 +157,10 @@ class GeneratePatternDialog {
 
         // Step header
         previewBox.children.add(HBox(2.0).apply {
-            children.add(Label("").apply { prefWidth = 120.0 })
+            children.add(Label("").apply { prefWidth = sz.scale(120.0) })
             (1..16).forEach { step ->
                 children.add(Label(step.toString()).apply {
-                    prefWidth = 20.0
+                    prefWidth = sz.scale(20.0)
                     alignment = Pos.CENTER
                     styleClass.add("step-header")
                 })
@@ -172,14 +173,14 @@ class GeneratePatternDialog {
             previewBox.children.add(HBox(2.0).apply {
                 alignment = Pos.CENTER_LEFT
                 children.add(Label("${voice.displayName} (%02d)".format(voice.poNumber)).apply {
-                    prefWidth = 120.0
+                    prefWidth = sz.scale(120.0)
                     alignment = Pos.CENTER_RIGHT
                     styleClass.add("voice-label")
                 })
                 (1..16).forEach { step ->
                     val active = step in steps
                     children.add(Label(if (active) "●" else "·").apply {
-                        prefWidth = 20.0
+                        prefWidth = sz.scale(20.0)
                         alignment = Pos.CENTER
                         styleClass.add(if (active) "step-active" else "step-inactive")
                         accessibleText = if (active) "${voice.displayName} step $step actif" else "Step $step inactif"

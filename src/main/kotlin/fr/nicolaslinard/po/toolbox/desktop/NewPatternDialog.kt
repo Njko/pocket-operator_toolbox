@@ -12,6 +12,7 @@ import javafx.util.StringConverter
 class NewPatternDialog(existingPattern: PO12Pattern? = null) {
 
     val model = NewPatternDialogModel(existingPattern)
+    private val sz = ScaledSize()
 
     private val nameField = TextField().apply { promptText = "Nom du pattern (requis)"; accessibleText = "Nom du pattern" }
     private val patternNumberSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0; accessibleText = "Numéro de pattern" }
@@ -28,8 +29,8 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         dialog.isResizable = true
         val content = buildContent()
         dialog.dialogPane.content = content
-        dialog.dialogPane.prefWidth = 740.0
-        dialog.dialogPane.prefHeight = 550.0
+        dialog.dialogPane.prefWidth = sz.dialogWidth
+        dialog.dialogPane.prefHeight = sz.dialogHeight
 
         // Bind content height to dialog so it grows when resized
         content.prefHeightProperty().bind(dialog.dialogPane.heightProperty())
@@ -103,11 +104,11 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         }
 
         // Step header
-        val headerBox = HBox(2.0).apply {
-            children.add(Label("").apply { prefWidth = 148.0 })
+        val headerBox = HBox(sz.spacing).apply {
+            children.add(Label("").apply { prefWidth = sz.editHeaderSpacerWidth })
             (1..16).forEach { step ->
                 children.add(Label(step.toString()).apply {
-                    prefWidth = 32.0
+                    prefWidth = sz.toggleSize
                     alignment = Pos.CENTER
                     styleClass.add("step-header")
                 })
@@ -116,7 +117,7 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
 
         val scrollPane = ScrollPane(voicesBox).apply {
             isFitToWidth = true
-            minHeight = 120.0
+            minHeight = sz.scrollMinHeight
             VBox.setVgrow(this, Priority.ALWAYS)
         }
 
@@ -134,7 +135,7 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         }
 
         return VBox(10.0, metaBox, Separator(), voicesLabel, adderRow, headerBox, scrollPane).apply {
-            padding = Insets(16.0)
+            padding = Insets(sz.padding)
         }
     }
 
@@ -143,8 +144,8 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
             val stepNumber = i + 1
             val isActive = stepNumber in activeSteps
             ToggleButton(if (isActive) "●" else "·").apply {
-                prefWidth = 32.0
-                prefHeight = 32.0
+                prefWidth = sz.toggleSize
+                prefHeight = sz.toggleSize
                 isSelected = isActive
                 accessibleText = "${voice.displayName} step $stepNumber ${if (isActive) "actif" else "inactif"}"
                 selectedProperty().addListener { _, _, on ->
@@ -167,11 +168,11 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
             }
         }
 
-        val row = HBox(2.0).apply {
+        val row = HBox(sz.spacing).apply {
             userData = voice
             alignment = Pos.CENTER_LEFT
             children.add(Label("${voice.displayName} (%02d)".format(voice.poNumber)).apply {
-                prefWidth = 140.0
+                prefWidth = sz.editVoiceLabelWidth
                 alignment = Pos.CENTER_RIGHT
                 styleClass.add("voice-label")
                 accessibleText = "${voice.displayName}, son numéro ${voice.poNumber}"

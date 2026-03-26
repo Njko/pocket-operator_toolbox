@@ -24,6 +24,7 @@ class PatternDetailView : View() {
     private var lastHighlightedStep = 0
     private var animationTimer: AnimationTimer? = null
     private val stepAnimator = StepAnimator(SharedAccessibilityPreferences.instance)
+    private val sz = ScaledSize()
 
     override val root = scrollpane {
         isFitToWidth = true
@@ -140,19 +141,18 @@ class PatternDetailView : View() {
         // Step header with beat grouping
         hbox(0.0) {
             alignment = Pos.CENTER_LEFT
-            label("") { prefWidth = 130.0 }
+            label("") { prefWidth = sz.voiceLabelWidth }
             (1..16).forEach { step ->
                 label(step.toString()) {
-                    prefWidth = 22.0
+                    prefWidth = sz.stepWidth
                     alignment = Pos.CENTER
                     styleClass.add("step-header")
                     accessibleText = "Step $step"
                     stepLabels[step]?.add(this)
                 }
-                // Beat separator after every 4 steps
                 if (step % 4 == 0 && step < 16) {
                     label("") {
-                        prefWidth = 4.0
+                        prefWidth = sz.beatSeparatorWidth
                         styleClass.add("beat-separator")
                     }
                 }
@@ -166,20 +166,19 @@ class PatternDetailView : View() {
                 hbox(0.0) {
                     alignment = Pos.CENTER_LEFT
                     val voiceLabel = label("${voice.displayName} (%02d)".format(voice.poNumber)) {
-                        prefWidth = 130.0
+                        prefWidth = sz.voiceLabelWidth
                         alignment = Pos.CENTER_RIGHT
                         styleClass.add("voice-label")
-                        style = "-fx-padding: 0 6 0 0;"
+                        style = "-fx-padding: 0 ${sz.voiceLabelPadding.toInt()} 0 0;"
                         accessibleText = "${voice.displayName}, son numéro ${voice.poNumber}"
                     }
-                    // Register this voice label for each active step
                     steps.forEach { step ->
                         stepVoiceLabels[step]?.add(voiceLabel)
                     }
                     (1..16).forEach { step ->
                         val active = step in steps
                         label(if (active) "●" else "·") {
-                            prefWidth = 22.0
+                            prefWidth = sz.stepWidth
                             alignment = Pos.CENTER
                             styleClass.add(if (active) "step-active" else "step-inactive")
                             accessibleText = if (active) "${voice.displayName} step $step actif" else "Step $step inactif"
@@ -187,7 +186,7 @@ class PatternDetailView : View() {
                         }
                         if (step % 4 == 0 && step < 16) {
                             label("") {
-                                prefWidth = 4.0
+                                prefWidth = sz.beatSeparatorWidth
                                 styleClass.add("beat-separator")
                             }
                         }

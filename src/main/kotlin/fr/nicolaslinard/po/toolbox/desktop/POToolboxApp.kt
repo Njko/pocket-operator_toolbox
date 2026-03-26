@@ -6,8 +6,9 @@ import tornadofx.launch
 
 class POToolboxApp : App(MainView::class) {
     override fun start(stage: Stage) {
-        stage.minWidth = 900.0
-        stage.minHeight = 600.0
+        val sz = ScaledSize()
+        stage.minWidth = sz.mainMinWidth
+        stage.minHeight = sz.mainMinHeight
         super.start(stage)
         ThemeManager.apply(stage.scene, SharedAccessibilityPreferences.instance)
     }
