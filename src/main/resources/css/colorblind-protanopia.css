@@ -1,0 +1,13 @@
+/* Protanopia (red-blind) — replace red with blue, keep yellow/orange */
+.step-active { -fx-text-fill: #2563eb; }
+.step-active.step-hit { -fx-text-fill: #60a5fa; -fx-effect: dropshadow(gaussian, #2563eb80, 8, 0.6, 0, 0); }
+.button.primary { -fx-background-color: #2563eb; }
+.button.primary:hover { -fx-background-color: #3b82f6; }
+.button.playback { -fx-background-color: #2563eb; }
+.button.playback:hover { -fx-background-color: #3b82f6; }
+.step-playing { -fx-background-color: #2563eb40; }
+.step-header.step-playing { -fx-text-fill: #2563eb; }
+.difficulty-beginner { -fx-text-fill: #60a5fa; }
+.difficulty-intermediate { -fx-text-fill: #fbbf24; }
+.difficulty-advanced { -fx-text-fill: #f97316; }
+.voice-label.voice-hit { -fx-text-fill: #60a5fa; -fx-effect: dropshadow(gaussian, #2563eb50, 6, 0.4, 0, 0); }

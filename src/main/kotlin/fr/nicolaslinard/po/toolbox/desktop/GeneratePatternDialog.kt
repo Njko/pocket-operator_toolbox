@@ -1,6 +1,5 @@
 package fr.nicolaslinard.po.toolbox.desktop
 
-import fr.nicolaslinard.po.toolbox.models.Difficulty
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
 import fr.nicolaslinard.po.toolbox.models.PatternTemplate
@@ -27,6 +26,12 @@ class GeneratePatternDialog {
         dialog.dialogPane.prefWidth = 780.0
         dialog.dialogPane.prefHeight = 550.0
         content.prefHeightProperty().bind(dialog.dialogPane.heightProperty())
+
+        // Apply accessibility theme to dialog
+        val prefs = SharedAccessibilityPreferences.instance
+        dialog.dialogPane.sceneProperty().addListener { _, _, scene ->
+            scene?.let { ThemeManager.apply(it, prefs) }
+        }
 
         val createType = ButtonType("Créer le pattern", ButtonBar.ButtonData.OK_DONE)
         dialog.dialogPane.buttonTypes.addAll(createType, ButtonType.CANCEL)
@@ -65,19 +70,20 @@ class GeneratePatternDialog {
                         if (empty || item == null) {
                             graphic = null
                         } else {
+                            accessibleText = "${item.name} - ${item.description} - ${item.suggestedBPM ?: "-"} BPM - ${item.difficulty.displayName}"
                             graphic = VBox(2.0).apply {
                                 children.add(Label(item.name).apply {
-                                    style = "-fx-font-weight: bold; -fx-font-size: 12px;"
+                                    styleClass.add("h2")
                                 })
                                 children.add(Label(item.description).apply {
-                                    style = "-fx-text-fill: gray; -fx-font-size: 11px;"
+                                    styleClass.add("muted")
                                 })
                                 children.add(HBox(8.0).apply {
                                     children.add(Label("${item.suggestedBPM ?: "-"} BPM").apply {
-                                        style = "-fx-font-size: 10px;"
+                                        styleClass.add("muted")
                                     })
                                     children.add(Label(item.difficulty.displayName).apply {
-                                        style = "-fx-font-size: 10px; -fx-text-fill: ${difficultyColor(item)};"
+                                        styleClass.add("difficulty-${item.difficulty.displayName}")
                                     })
                                 })
                             }
@@ -90,12 +96,11 @@ class GeneratePatternDialog {
         // Right: preview
         val previewScroll = ScrollPane(previewBox).apply {
             isFitToWidth = true
-            style = "-fx-background-color: transparent;"
             HBox.setHgrow(this, Priority.ALWAYS)
         }
 
         val previewPanel = VBox(8.0,
-            Label("Apercu").apply { style = "-fx-font-weight: bold;" },
+            Label("Aperçu").apply { styleClass.add("h2") },
             previewScroll
         ).apply {
             HBox.setHgrow(this, Priority.ALWAYS)
@@ -107,7 +112,7 @@ class GeneratePatternDialog {
 
         return VBox(10.0,
             Label("Choisissez un style et un pattern :").apply {
-                style = "-fx-font-size: 13px;"
+                styleClass.add("h2")
             },
             browserBox
         ).apply {
@@ -142,14 +147,12 @@ class GeneratePatternDialog {
         if (template == null) return
 
         previewBox.children.add(Label(template.name).apply {
-            style = "-fx-font-weight: bold; -fx-font-size: 14px;"
+            styleClass.add("h2")
         })
         previewBox.children.add(Label(template.description).apply {
-            style = "-fx-text-fill: gray; -fx-padding: 0 0 4 0;"
+            styleClass.add("muted")
         })
-        previewBox.children.add(Label("BPM : ${template.suggestedBPM ?: "-"}  |  Difficulté : ${template.difficulty.displayName}").apply {
-            style = "-fx-font-size: 11px; -fx-padding: 0 0 8 0;"
-        })
+        previewBox.children.add(Label("BPM : ${template.suggestedBPM ?: "-"}  |  Difficulté : ${template.difficulty.displayName}"))
 
         // Step header
         previewBox.children.add(HBox(2.0).apply {
@@ -158,7 +161,7 @@ class GeneratePatternDialog {
                 children.add(Label(step.toString()).apply {
                     prefWidth = 20.0
                     alignment = Pos.CENTER
-                    style = "-fx-font-size: 9px; -fx-text-fill: gray; -fx-font-family: monospace;"
+                    styleClass.add("step-header")
                 })
             }
         })
@@ -171,29 +174,19 @@ class GeneratePatternDialog {
                 children.add(Label("${voice.displayName} (%02d)".format(voice.poNumber)).apply {
                     prefWidth = 120.0
                     alignment = Pos.CENTER_RIGHT
-                    style = "-fx-font-family: monospace; -fx-font-size: 10px;"
+                    styleClass.add("voice-label")
                 })
                 (1..16).forEach { step ->
                     val active = step in steps
                     children.add(Label(if (active) "●" else "·").apply {
                         prefWidth = 20.0
                         alignment = Pos.CENTER
-                        style = buildString {
-                            append("-fx-font-family: monospace; -fx-font-size: 12px;")
-                            if (active) append(" -fx-text-fill: #e07050; -fx-font-weight: bold;")
-                            else append(" -fx-text-fill: #666666;")
-                        }
+                        styleClass.add(if (active) "step-active" else "step-inactive")
+                        accessibleText = if (active) "${voice.displayName} step $step actif" else "Step $step inactif"
                     })
                 }
             })
         }
     }
 
-    private fun difficultyColor(template: PatternTemplate): String {
-        return when (template.difficulty) {
-            Difficulty.BEGINNER -> "#55aa55"
-            Difficulty.INTERMEDIATE -> "#cc9933"
-            Difficulty.ADVANCED -> "#cc5555"
-        }
-    }
 }

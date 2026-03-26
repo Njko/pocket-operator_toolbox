@@ -13,10 +13,10 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
 
     val model = NewPatternDialogModel(existingPattern)
 
-    private val nameField = TextField().apply { promptText = "Nom du pattern (requis)" }
-    private val patternNumberSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0 }
-    private val bpmField = TextField().apply { promptText = "ex: 120"; prefWidth = 70.0 }
-    private val difficultyCombo = ComboBox<String>()
+    private val nameField = TextField().apply { promptText = "Nom du pattern (requis)"; accessibleText = "Nom du pattern" }
+    private val patternNumberSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0; accessibleText = "Numéro de pattern" }
+    private val bpmField = TextField().apply { promptText = "ex: 120"; prefWidth = 70.0; accessibleText = "BPM" }
+    private val difficultyCombo = ComboBox<String>().apply { accessibleText = "Difficulté" }
     private val voiceCombo = ComboBox<PO12DrumVoice>()
     private val voicesBox = VBox(4.0)
     private val voiceRows = LinkedHashMap<PO12DrumVoice, Array<ToggleButton>>()
@@ -33,6 +33,13 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
 
         // Bind content height to dialog so it grows when resized
         content.prefHeightProperty().bind(dialog.dialogPane.heightProperty())
+
+        // Apply accessibility theme to dialog
+        val prefs = SharedAccessibilityPreferences.instance
+        dialog.dialogPane.scene?.let { ThemeManager.apply(it, prefs) }
+        dialog.dialogPane.sceneProperty().addListener { _, _, scene ->
+            scene?.let { ThemeManager.apply(it, prefs) }
+        }
 
         val saveType = ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE)
         dialog.dialogPane.buttonTypes.addAll(saveType, ButtonType.CANCEL)
@@ -53,14 +60,14 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         difficultyCombo.items.addAll("-", "beginner", "intermediate", "advanced")
         difficultyCombo.value = "-"
 
-        val metaRow1 = HBox(10.0, Label("Nom *"), nameField).apply {
+        val metaRow1 = HBox(10.0, Label("Nom *").apply { labelFor = nameField }, nameField).apply {
             alignment = Pos.CENTER_LEFT
             HBox.setHgrow(nameField, Priority.ALWAYS)
         }
         val metaRow2 = HBox(10.0,
-            Label("N° pattern"), patternNumberSpinner,
-            Label("BPM"), bpmField,
-            Label("Difficulté"), difficultyCombo
+            Label("N° pattern").apply { labelFor = patternNumberSpinner }, patternNumberSpinner,
+            Label("BPM").apply { labelFor = bpmField }, bpmField,
+            Label("Difficulté").apply { labelFor = difficultyCombo }, difficultyCombo
         ).apply { alignment = Pos.CENTER_LEFT }
 
         val metaBox = VBox(8.0, metaRow1, metaRow2).apply {
@@ -110,7 +117,6 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         val scrollPane = ScrollPane(voicesBox).apply {
             isFitToWidth = true
             minHeight = 120.0
-            style = "-fx-background-color: transparent;"
             VBox.setVgrow(this, Priority.ALWAYS)
         }
 
@@ -140,8 +146,10 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
                 prefWidth = 32.0
                 prefHeight = 32.0
                 isSelected = isActive
+                accessibleText = "${voice.displayName} step $stepNumber ${if (isActive) "actif" else "inactif"}"
                 selectedProperty().addListener { _, _, on ->
                     text = if (on) "●" else "·"
+                    accessibleText = "${voice.displayName} step $stepNumber ${if (on) "actif" else "inactif"}"
                 }
                 tooltip = Tooltip("Step $stepNumber")
             }
@@ -150,6 +158,7 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
 
         val removeBtn = Button("×").apply {
             styleClass.add("danger")
+            accessibleText = "Supprimer ${voice.displayName}"
             setOnAction {
                 model.removeVoice(voice)
                 voiceRows.remove(voice)
@@ -165,6 +174,7 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
                 prefWidth = 140.0
                 alignment = Pos.CENTER_RIGHT
                 styleClass.add("voice-label")
+                accessibleText = "${voice.displayName}, son numéro ${voice.poNumber}"
             })
             toggles.forEach { children.add(it) }
             children.add(removeBtn)

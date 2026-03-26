@@ -1,0 +1,14 @@
+/* Tritanopia (blue-yellow) — replace blue/yellow with red/cyan */
+.step-active { -fx-text-fill: #e11d48; }
+.step-active.step-hit { -fx-text-fill: #fb7185; -fx-effect: dropshadow(gaussian, #e11d4880, 8, 0.6, 0, 0); }
+.button.primary { -fx-background-color: #e11d48; }
+.button.primary:hover { -fx-background-color: #f43f5e; }
+.button.playback { -fx-background-color: #e11d48; }
+.button.playback:hover { -fx-background-color: #f43f5e; }
+.step-playing { -fx-background-color: #e11d4840; }
+.step-header.step-playing { -fx-text-fill: #e11d48; }
+.difficulty-beginner { -fx-text-fill: #06b6d4; }
+.difficulty-intermediate { -fx-text-fill: #f43f5e; }
+.difficulty-advanced { -fx-text-fill: #be123c; }
+.toggle-button.loop-toggle:selected { -fx-background-color: #e11d48; -fx-text-fill: #ffffff; }
+.voice-label.voice-hit { -fx-text-fill: #fb7185; -fx-effect: dropshadow(gaussian, #e11d4850, 6, 0.4, 0, 0); }

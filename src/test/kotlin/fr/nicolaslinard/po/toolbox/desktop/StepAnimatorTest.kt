@@ -47,4 +47,18 @@ class StepAnimatorTest {
     fun `should define voice hit style class constant`() {
         assertEquals("voice-hit", StepAnimator.VOICE_HIT_STYLE_CLASS)
     }
+
+    @Test
+    fun `should respect reduceMotion preference`() {
+        val prefs = AccessibilityPreferences()
+        prefs.reduceMotion = true
+        val animator = StepAnimator(prefs)
+        assertTrue(animator.isReducedMotion)
+    }
+
+    @Test
+    fun `should not reduce motion by default`() {
+        val animator = StepAnimator()
+        assertFalse(animator.isReducedMotion)
+    }
 }

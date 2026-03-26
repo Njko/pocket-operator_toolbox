@@ -4,7 +4,9 @@ import javafx.animation.ScaleTransition
 import javafx.scene.control.Label
 import javafx.util.Duration
 
-class StepAnimator {
+class StepAnimator(
+    private val preferences: AccessibilityPreferences = AccessibilityPreferences()
+) {
 
     companion object {
         const val HIT_STYLE_CLASS = "step-hit"
@@ -18,7 +20,10 @@ class StepAnimator {
             styleClass == ACTIVE_STYLE_CLASS
     }
 
+    val isReducedMotion: Boolean get() = preferences.reduceMotion
+
     private val activeTransitions = mutableListOf<Pair<Label, ScaleTransition>>()
+    private val styledLabels = mutableListOf<Pair<Label, String>>()
 
     fun animateStep(labels: List<Label>) {
         labels.filter { label -> label.styleClass.any { isActiveStyleClass(it) } }
@@ -34,14 +39,20 @@ class StepAnimator {
             transition.stop()
             label.scaleX = 1.0
             label.scaleY = 1.0
-            label.styleClass.remove(HIT_STYLE_CLASS)
-            label.styleClass.remove(VOICE_HIT_STYLE_CLASS)
         }
         activeTransitions.clear()
+        styledLabels.forEach { (label, cssClass) ->
+            label.styleClass.remove(cssClass)
+        }
+        styledLabels.clear()
     }
 
     private fun pulseLabel(label: Label, cssClass: String, scale: Double) {
         label.styleClass.add(cssClass)
+        styledLabels.add(label to cssClass)
+
+        if (preferences.reduceMotion) return
+
         val transition = ScaleTransition(PULSE_DURATION, label).apply {
             fromX = 1.0
             fromY = 1.0

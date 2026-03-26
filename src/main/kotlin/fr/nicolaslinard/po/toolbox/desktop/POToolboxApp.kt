@@ -9,8 +9,7 @@ class POToolboxApp : App(MainView::class) {
         stage.minWidth = 900.0
         stage.minHeight = 600.0
         super.start(stage)
-        val css = javaClass.getResource("/css/app.css")?.toExternalForm()
-        if (css != null) stage.scene.stylesheets.add(css)
+        ThemeManager.apply(stage.scene, SharedAccessibilityPreferences.instance)
     }
 
     override fun stop() {

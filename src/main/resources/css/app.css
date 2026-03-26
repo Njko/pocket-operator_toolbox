@@ -97,7 +97,7 @@
 }
 .table-view .column-header .label {
     -fx-text-fill: #9ca3af;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.92em;
     -fx-font-weight: bold;
 }
 .table-row-cell {
@@ -118,7 +118,7 @@
 }
 .table-cell {
     -fx-text-fill: #d1d5db;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.92em;
 }
 .table-row-cell:selected .table-cell {
     -fx-text-fill: #f3f4f6;
@@ -267,24 +267,24 @@
 
 /* === Step grid: beat grouping === */
 .step-header {
-    -fx-font-size: 10px;
+    -fx-font-size: 0.85em;
     -fx-text-fill: #6b7280;
     -fx-font-family: monospace;
 }
 .step-active {
     -fx-font-family: monospace;
-    -fx-font-size: 13px;
+    -fx-font-size: 1.08em;
     -fx-text-fill: #14b8a6;
     -fx-font-weight: bold;
 }
 .step-inactive {
     -fx-font-family: monospace;
-    -fx-font-size: 13px;
-    -fx-text-fill: #4b5563;
+    -fx-font-size: 1.08em;
+    -fx-text-fill: #6b7280;
 }
 .voice-label {
     -fx-font-family: monospace;
-    -fx-font-size: 11px;
+    -fx-font-size: 0.92em;
     -fx-text-fill: #9ca3af;
 }
 .beat-separator {
@@ -333,4 +333,25 @@
 /* === Difficulty badges === */
 .difficulty-beginner { -fx-text-fill: #34d399; }
 .difficulty-intermediate { -fx-text-fill: #fbbf24; }
-.difficulty-advanced { -fx-text-fill: #f87171; }
+.difficulty-advanced { -fx-text-fill: #fca5a5; }
+
+/* === Focus indicators (keyboard navigation) === */
+.button:focused {
+    -fx-border-color: #14b8a6;
+    -fx-border-width: 2;
+    -fx-border-radius: 4;
+}
+.toggle-button:focused {
+    -fx-border-color: #14b8a6;
+    -fx-border-width: 2;
+}
+.table-row-cell:focused {
+    -fx-background-color: #14b8a630;
+}
+.text-field:focused, .combo-box:focused, .spinner:focused {
+    -fx-border-color: #14b8a6;
+    -fx-border-width: 2;
+}
+.list-cell:focused {
+    -fx-background-color: #14b8a625;
+}

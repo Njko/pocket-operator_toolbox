@@ -2,6 +2,7 @@ package fr.nicolaslinard.po.toolbox.desktop
 
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableColumn
+import javafx.scene.input.KeyCode
 import javafx.scene.input.MouseButton
 import javafx.scene.layout.Priority
 import tornadofx.View
@@ -16,7 +17,8 @@ class PatternListView : View() {
 
     override val root = vbox {
         label("Patterns") {
-            style = "-fx-font-size: 13px; -fx-font-weight: bold; -fx-padding: 8px;"
+            styleClass.add("h2")
+            style = "-fx-padding: 8px;"
         }
 
         tableview(controller.patterns) {
@@ -54,6 +56,14 @@ class PatternListView : View() {
                 if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
                     val summary = selectionModel.selectedItem ?: return@setOnMouseClicked
                     val updatedPattern = NewPatternDialog(summary.pattern).show() ?: return@setOnMouseClicked
+                    controller.updatePattern(summary.file, updatedPattern)
+                }
+            }
+
+            setOnKeyPressed { event ->
+                if (event.code == KeyCode.ENTER) {
+                    val summary = selectionModel.selectedItem ?: return@setOnKeyPressed
+                    val updatedPattern = NewPatternDialog(summary.pattern).show() ?: return@setOnKeyPressed
                     controller.updatePattern(summary.file, updatedPattern)
                 }
             }

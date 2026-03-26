@@ -23,7 +23,7 @@ class PatternDetailView : View() {
     private val stepVoiceLabels = mutableMapOf<Int, MutableList<Label>>()
     private var lastHighlightedStep = 0
     private var animationTimer: AnimationTimer? = null
-    private val stepAnimator = StepAnimator()
+    private val stepAnimator = StepAnimator(SharedAccessibilityPreferences.instance)
 
     override val root = scrollpane {
         isFitToWidth = true
@@ -146,6 +146,7 @@ class PatternDetailView : View() {
                     prefWidth = 22.0
                     alignment = Pos.CENTER
                     styleClass.add("step-header")
+                    accessibleText = "Step $step"
                     stepLabels[step]?.add(this)
                 }
                 // Beat separator after every 4 steps
@@ -169,6 +170,7 @@ class PatternDetailView : View() {
                         alignment = Pos.CENTER_RIGHT
                         styleClass.add("voice-label")
                         style = "-fx-padding: 0 6 0 0;"
+                        accessibleText = "${voice.displayName}, son numéro ${voice.poNumber}"
                     }
                     // Register this voice label for each active step
                     steps.forEach { step ->
@@ -180,6 +182,7 @@ class PatternDetailView : View() {
                             prefWidth = 22.0
                             alignment = Pos.CENTER
                             styleClass.add(if (active) "step-active" else "step-inactive")
+                            accessibleText = if (active) "${voice.displayName} step $step actif" else "Step $step inactif"
                             stepLabels[step]?.add(this)
                         }
                         if (step % 4 == 0 && step < 16) {
