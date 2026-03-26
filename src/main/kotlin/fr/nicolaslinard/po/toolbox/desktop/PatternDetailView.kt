@@ -2,6 +2,7 @@ package fr.nicolaslinard.po.toolbox.desktop
 
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.PODevice
 import javafx.animation.AnimationTimer
 import javafx.geometry.Pos
 import javafx.scene.control.Label
@@ -119,8 +120,9 @@ class PatternDetailView : View() {
         // Metadata
         hbox(10.0) {
             alignment = Pos.CENTER_LEFT
+            label(pattern.metadata.deviceModel) { style = "-fx-font-weight: bold;" }
             pattern.metadata.bpm?.let {
-                label("BPM : $it") { style = "-fx-font-weight: bold;" }
+                label("| BPM : $it") { style = "-fx-font-weight: bold;" }
             }
             pattern.metadata.difficulty?.let {
                 label("| ${it.displayName}") {
@@ -180,12 +182,15 @@ class PatternDetailView : View() {
             if (steps.isNotEmpty()) {
                 hbox(0.0) {
                     alignment = Pos.CENTER_LEFT
-                    val voiceLabel = label("${voice.displayName} (%02d)".format(voice.poNumber)) {
+                    val device = PODevice.fromModelId(pattern.metadata.deviceModel) ?: PODevice.PO_12
+                    val deviceVoice = device.getVoiceByNumber(voice.poNumber)
+                    val voiceName = deviceVoice?.displayName ?: voice.displayName
+                    val voiceLabel = label("$voiceName (%02d)".format(voice.poNumber)) {
                         prefWidth = sz.voiceLabelWidth
                         alignment = Pos.CENTER_RIGHT
                         styleClass.add("voice-label")
                         style = "-fx-padding: 0 ${sz.voiceLabelPadding.toInt()} 0 0;"
-                        accessibleText = "${voice.displayName}, son numéro ${voice.poNumber}"
+                        accessibleText = "$voiceName, son numéro ${voice.poNumber}"
                     }
                     steps.forEach { step ->
                         stepVoiceLabels[step]?.add(voiceLabel)
@@ -216,14 +221,17 @@ class PatternDetailView : View() {
         separator()
 
         // Programming instructions
-        label("Comment programmer sur le PO-12") {
+        val instrDevice = PODevice.fromModelId(pattern.metadata.deviceModel) ?: PODevice.PO_12
+        label("Comment programmer sur le ${instrDevice.modelId} ${instrDevice.deviceName}") {
             styleClass.add("h2")
         }
 
         PO12DrumVoice.entries.forEach { voice ->
             val steps = pattern.getActiveSteps(voice)
             if (steps.isNotEmpty()) {
-                label("Son %02d (%s) → steps : %s".format(voice.poNumber, voice.displayName, steps.joinToString(", "))) {
+                val instrVoice = instrDevice.getVoiceByNumber(voice.poNumber)
+                val instrName = instrVoice?.displayName ?: voice.displayName
+                label("Son %02d (%s) → steps : %s".format(voice.poNumber, instrName, steps.joinToString(", "))) {
                     styleClass.add("voice-label")
                 }
             }

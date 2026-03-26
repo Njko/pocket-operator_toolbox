@@ -2,6 +2,8 @@ package fr.nicolaslinard.po.toolbox.desktop
 
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.PODevice
+import fr.nicolaslinard.po.toolbox.models.POVoice
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -18,6 +20,15 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
     private val patternNumberSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0; accessibleText = "Numéro de pattern" }
     private val bpmField = TextField().apply { promptText = "ex: 120"; prefWidth = 70.0; accessibleText = "BPM" }
     private val difficultyCombo = ComboBox<String>().apply { accessibleText = "Difficulté" }
+    private val deviceCombo = ComboBox<PODevice>().apply {
+        items.addAll(PODevice.entries)
+        value = PODevice.PO_12
+        accessibleText = "Modèle Pocket Operator"
+        converter = object : StringConverter<PODevice>() {
+            override fun toString(d: PODevice?) = d?.let { "${it.modelId} ${it.deviceName}" } ?: ""
+            override fun fromString(s: String) = null
+        }
+    }
     private val voiceCombo = ComboBox<PO12DrumVoice>()
     private val barCountSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0; accessibleText = "Nombre de mesures" }
     private val barLabel = Label("Mesure 1 / 1")
@@ -69,10 +80,19 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
             HBox.setHgrow(nameField, Priority.ALWAYS)
         }
         val metaRow2 = HBox(10.0,
+            Label("Modèle").apply { labelFor = deviceCombo }, deviceCombo,
             Label("N° pattern").apply { labelFor = patternNumberSpinner }, patternNumberSpinner,
             Label("BPM").apply { labelFor = bpmField }, bpmField,
             Label("Difficulté").apply { labelFor = difficultyCombo }, difficultyCombo
         ).apply { alignment = Pos.CENTER_LEFT }
+
+        // When device changes, rebuild voice combo with device-specific voices
+        deviceCombo.valueProperty().addListener { _, _, newDevice ->
+            if (newDevice != null) {
+                model.device = newDevice
+                rebuildVoiceGrid()
+            }
+        }
 
         // Multi-bar navigation
         val prevBarBtn = Button("◀").apply {
@@ -98,9 +118,13 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         }
 
         // Voice selector
-        voiceCombo.prefWidth = 170.0
+        voiceCombo.prefWidth = 200.0
         voiceCombo.converter = object : StringConverter<PO12DrumVoice>() {
-            override fun toString(v: PO12DrumVoice?) = v?.let { "${it.displayName} (${it.poNumber})" } ?: ""
+            override fun toString(v: PO12DrumVoice?) = v?.let {
+                val device = deviceCombo.value ?: PODevice.PO_12
+                val deviceVoice = device.getVoiceByNumber(it.poNumber)
+                deviceVoice?.let { dv -> "${dv.displayName} (${dv.number})" } ?: "${it.displayName} (${it.poNumber})"
+            } ?: ""
             override fun fromString(s: String) = null
         }
         refreshVoiceCombo()
@@ -193,11 +217,13 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         val row = HBox(sz.spacing).apply {
             userData = voice
             alignment = Pos.CENTER_LEFT
-            children.add(Label("${voice.displayName} (%02d)".format(voice.poNumber)).apply {
+            val deviceVoice = deviceCombo.value?.getVoiceByNumber(voice.poNumber)
+            val voiceName = deviceVoice?.displayName ?: voice.displayName
+            children.add(Label("$voiceName (%02d)".format(voice.poNumber)).apply {
                 prefWidth = sz.editVoiceLabelWidth
                 alignment = Pos.CENTER_RIGHT
                 styleClass.add("voice-label")
-                accessibleText = "${voice.displayName}, son numéro ${voice.poNumber}"
+                accessibleText = "$voiceName, son numéro ${voice.poNumber}"
             })
             toggles.forEach { children.add(it) }
             children.add(removeBtn)

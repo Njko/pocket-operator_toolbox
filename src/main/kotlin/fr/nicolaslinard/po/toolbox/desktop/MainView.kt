@@ -19,7 +19,7 @@ import tornadofx.View
 import tornadofx.borderpane
 import tornadofx.splitpane
 
-class MainView : View("PO-12 Toolbox") {
+class MainView : View("Pocket Operator Toolbox") {
 
     private val controller: PatternController by inject()
     private val playbackController = SharedPlaybackController.instance

@@ -10,7 +10,8 @@ data class PatternMetadata(
     val difficulty: Difficulty? = null,
     val sourceAttribution: String? = null,
     val author: String? = null,
-    val dateCreated: LocalDate = LocalDate.now()
+    val dateCreated: LocalDate = LocalDate.now(),
+    val deviceModel: String = "PO-12"
 )
 
 enum class Difficulty(val displayName: String) {

@@ -3,12 +3,14 @@ package fr.nicolaslinard.po.toolbox.desktop
 import fr.nicolaslinard.po.toolbox.models.Difficulty
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.PODevice
 import fr.nicolaslinard.po.toolbox.models.PatternChain
 import fr.nicolaslinard.po.toolbox.models.PatternMetadata
 import java.util.TreeMap
 
 class NewPatternDialogModel(existingPattern: PO12Pattern? = null) {
 
+    var device: PODevice = PODevice.PO_12
     var name: String = existingPattern?.metadata?.name ?: ""
     var patternNumber: Int = existingPattern?.number ?: 1
     var bpm: String = existingPattern?.metadata?.bpm?.toString() ?: ""
@@ -103,6 +105,7 @@ class NewPatternDialogModel(existingPattern: PO12Pattern? = null) {
     private fun buildMetadata(): PatternMetadata = PatternMetadata(
         name = name.trim(),
         bpm = bpm.trim().toIntOrNull(),
-        difficulty = Difficulty.fromString(difficulty)
+        difficulty = Difficulty.fromString(difficulty),
+        deviceModel = device.modelId
     )
 }
