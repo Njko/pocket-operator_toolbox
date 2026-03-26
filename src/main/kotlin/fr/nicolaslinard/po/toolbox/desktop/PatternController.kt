@@ -11,6 +11,7 @@ class PatternController : Controller() {
     val patterns = FXCollections.observableArrayList<PatternSummary>()
     val selectedPattern = SimpleObjectProperty<PO12Pattern?>()
     val selectedSummary = SimpleObjectProperty<PatternSummary?>()
+    var activeDialogResult: PatternDialogResult? = null
 
     var repository: PatternRepository = FilePatternRepository()
 
@@ -21,6 +22,7 @@ class PatternController : Controller() {
     fun selectPattern(summary: PatternSummary?) {
         selectedSummary.set(summary)
         selectedPattern.set(summary?.pattern)
+        activeDialogResult = null
     }
 
     fun createPattern(pattern: PO12Pattern) {

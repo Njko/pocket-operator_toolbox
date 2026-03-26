@@ -1,6 +1,7 @@
 package fr.nicolaslinard.po.toolbox.io
 
 import fr.nicolaslinard.po.toolbox.TestFixtures
+import fr.nicolaslinard.po.toolbox.models.PatternChain
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeEach
@@ -128,6 +129,36 @@ class MidiPlaybackServiceTest {
         }
 
         // --- Playback options ---
+
+        // --- Multi-bar: tickToStep with bar tracking ---
+
+        @Test
+        fun `should return bar 1 step 1 for tick 0`() {
+            val result = service.tickToBarAndStep(0)
+            assertEquals(1, result.bar)
+            assertEquals(1, result.step)
+        }
+
+        @Test
+        fun `should return bar 2 step 1 for tick 384`() {
+            // tick 384 = 16 * 24 = start of bar 2
+            val result = service.tickToBarAndStep(384)
+            assertEquals(2, result.bar)
+            assertEquals(1, result.step)
+        }
+
+        @Test
+        fun `should return bar 2 step 5 for tick 480`() {
+            // tick 480 = 384 + 4*24 = bar 2, step 5
+            val result = service.tickToBarAndStep(480)
+            assertEquals(2, result.bar)
+            assertEquals(5, result.step)
+        }
+
+        @Test
+        fun `should track totalBars as 1 for single pattern`() {
+            assertEquals(1, service.totalBars)
+        }
 
         @Test
         fun `should use short note duration for playback to avoid bleed past bar`() {
@@ -310,6 +341,43 @@ class MidiPlaybackServiceTest {
             assertTrue(service.isPlaying)
             Thread.sleep(1500)
             assertTrue(service.isPlaying)
+            service.stop()
+        }
+
+        // --- Multi-bar playback ---
+
+        @Test
+        fun `should play a chain of patterns`() {
+            val p1 = TestFixtures.createSimplePattern(name = "Bar 1", patternNumber = 1)
+            val p2 = TestFixtures.createSimplePattern(name = "Bar 2", patternNumber = 2)
+            val chain = PatternChain(
+                name = "Test Chain",
+                patterns = listOf(p1, p2),
+                sequence = listOf(1, 2),
+                metadata = TestFixtures.createTestMetadata()
+            )
+            service.playChain(chain)
+            assertTrue(service.isPlaying)
+            assertEquals(2, service.totalBars)
+            service.stop()
+        }
+
+        @Test
+        fun `should loop entire chain when looping`() {
+            val p1 = TestFixtures.createSimplePattern(name = "Bar 1", bpm = 206, patternNumber = 1)
+            val p2 = TestFixtures.createSimplePattern(name = "Bar 2", bpm = 206, patternNumber = 2)
+            val chain = PatternChain(
+                name = "Loop Chain",
+                patterns = listOf(p1, p2),
+                sequence = listOf(1, 2),
+                metadata = TestFixtures.createTestMetadata(bpm = 206)
+            )
+            service.toggleLoop()
+            service.playChain(chain)
+            assertTrue(service.isPlaying)
+            // At 206 BPM, 2 bars ~ 2.3s. Wait for full cycle
+            Thread.sleep(2500)
+            assertTrue(service.isPlaying, "Should still be playing after loop")
             service.stop()
         }
 

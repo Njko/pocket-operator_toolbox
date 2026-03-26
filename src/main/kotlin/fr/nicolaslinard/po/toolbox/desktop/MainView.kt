@@ -25,8 +25,9 @@ class MainView : View("PO-12 Toolbox") {
     private val playbackController = SharedPlaybackController.instance
 
     private fun createNewPattern() {
-        val pattern = NewPatternDialog().show() ?: return
-        controller.createPattern(pattern)
+        val result = NewPatternDialog().showMultiBar() ?: return
+        controller.activeDialogResult = result
+        controller.createPattern(result.firstPattern)
     }
 
     private fun generatePattern() {
@@ -196,7 +197,12 @@ class MainView : View("PO-12 Toolbox") {
                         } else {
                             val pattern = controller.selectedPattern.value ?: return@setOnAction
                             try {
-                                playbackController.play(pattern)
+                                val result = controller.activeDialogResult
+                                if (result is PatternDialogResult.Chain) {
+                                    playbackController.playChain(result.chain)
+                                } else {
+                                    playbackController.play(pattern)
+                                }
                                 text = "Stop"
                             } catch (e: Exception) {
                                 Alert(Alert.AlertType.ERROR).apply {

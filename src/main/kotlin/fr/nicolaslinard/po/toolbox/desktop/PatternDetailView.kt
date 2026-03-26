@@ -19,9 +19,12 @@ class PatternDetailView : View() {
 
     private val controller: PatternController by inject()
     private val playbackController = SharedPlaybackController.instance
+    private var chainPatterns: List<PO12Pattern> = emptyList()
+    private var lastDisplayedBar = 0
     private val stepLabels = mutableMapOf<Int, MutableList<Label>>()
     private val stepVoiceLabels = mutableMapOf<Int, MutableList<Label>>()
     private var lastHighlightedStep = 0
+    private var playbackInfoLabel: Label? = null
     private var animationTimer: AnimationTimer? = null
     private val stepAnimator = StepAnimator(SharedAccessibilityPreferences.instance)
     private val sz = ScaledSize()
@@ -40,6 +43,9 @@ class PatternDetailView : View() {
                         style = "-fx-font-size: 14px; -fx-padding: 40 0 0 0;"
                     }
                 } else {
+                    val result = controller.activeDialogResult
+                    chainPatterns = result?.patterns ?: listOf(pattern)
+                    lastDisplayedBar = 0
                     renderPattern(pattern)
                 }
             }
@@ -54,7 +60,14 @@ class PatternDetailView : View() {
                     if (lastHighlightedStep != 0) {
                         clearHighlight()
                     }
+                    playbackInfoLabel?.text = ""
                     return
+                }
+                // Update bar info
+                if (playbackController.totalBars > 1) {
+                    playbackInfoLabel?.text = "▶ Mesure ${playbackController.currentBar} / ${playbackController.totalBars}"
+                } else {
+                    playbackInfoLabel?.text = "▶"
                 }
                 val step = playbackController.currentStep
                 if (step != lastHighlightedStep) {
@@ -125,8 +138,10 @@ class PatternDetailView : View() {
         separator()
 
         // Grid
-        label("Grille de steps") {
-            styleClass.add("h2")
+        hbox(10.0) {
+            alignment = Pos.CENTER_LEFT
+            label("Grille de steps") { styleClass.add("h2") }
+            playbackInfoLabel = label("") { styleClass.add("muted") }
         }
 
         // Clear animations and step labels for highlight tracking

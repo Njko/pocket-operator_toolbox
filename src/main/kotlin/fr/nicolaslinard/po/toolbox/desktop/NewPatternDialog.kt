@@ -19,11 +19,15 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
     private val bpmField = TextField().apply { promptText = "ex: 120"; prefWidth = 70.0; accessibleText = "BPM" }
     private val difficultyCombo = ComboBox<String>().apply { accessibleText = "Difficulté" }
     private val voiceCombo = ComboBox<PO12DrumVoice>()
+    private val barCountSpinner = Spinner<Int>(1, 16, 1).apply { prefWidth = 70.0; accessibleText = "Nombre de mesures" }
+    private val barLabel = Label("Mesure 1 / 1")
     private val voicesBox = VBox(4.0)
     private val voiceRows = LinkedHashMap<PO12DrumVoice, Array<ToggleButton>>()
 
-    fun show(): PO12Pattern? {
-        val dialog = Dialog<PO12Pattern?>()
+    fun show(): PO12Pattern? = showMultiBar()?.firstPattern
+
+    fun showMultiBar(): PatternDialogResult? {
+        val dialog = Dialog<PatternDialogResult?>()
         dialog.title = if (model.isEditMode) "Éditer le pattern" else "Nouveau pattern"
         dialog.headerText = null
         dialog.isResizable = true
@@ -32,12 +36,9 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         dialog.dialogPane.prefWidth = sz.dialogWidth
         dialog.dialogPane.prefHeight = sz.dialogHeight
 
-        // Bind content height to dialog so it grows when resized
         content.prefHeightProperty().bind(dialog.dialogPane.heightProperty())
 
-        // Apply accessibility theme to dialog
         val prefs = SharedAccessibilityPreferences.instance
-        dialog.dialogPane.scene?.let { ThemeManager.apply(it, prefs) }
         dialog.dialogPane.sceneProperty().addListener { _, _, scene ->
             scene?.let { ThemeManager.apply(it, prefs) }
         }
@@ -51,7 +52,9 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
             saveButton.isDisable = v.trim().isEmpty()
         }
 
-        dialog.setResultConverter { bt -> if (bt == saveType) buildPattern() else null }
+        dialog.setResultConverter { bt ->
+            if (bt == saveType) { syncModelFromUI(); model.buildResult() } else null
+        }
 
         return dialog.showAndWait().orElse(null)
     }
@@ -71,7 +74,26 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
             Label("Difficulté").apply { labelFor = difficultyCombo }, difficultyCombo
         ).apply { alignment = Pos.CENTER_LEFT }
 
-        val metaBox = VBox(8.0, metaRow1, metaRow2).apply {
+        // Multi-bar navigation
+        val prevBarBtn = Button("◀").apply {
+            accessibleText = "Mesure précédente"
+            setOnAction { navigateBar(-1) }
+        }
+        val nextBarBtn = Button("▶").apply {
+            accessibleText = "Mesure suivante"
+            setOnAction { navigateBar(1) }
+        }
+        barCountSpinner.valueFactory.valueProperty().addListener { _, _, newCount ->
+            model.barCount = newCount
+            updateBarLabel()
+        }
+        val barNavRow = HBox(8.0,
+            Label("Mesures").apply { labelFor = barCountSpinner }, barCountSpinner,
+            Separator(javafx.geometry.Orientation.VERTICAL),
+            prevBarBtn, barLabel, nextBarBtn
+        ).apply { alignment = Pos.CENTER_LEFT }
+
+        val metaBox = VBox(8.0, metaRow1, metaRow2, barNavRow).apply {
             padding = Insets(0.0, 0.0, 4.0, 0.0)
         }
 
@@ -194,6 +216,27 @@ class NewPatternDialog(existingPattern: PO12Pattern? = null) {
         val remaining = PO12DrumVoice.entries.filter { !voiceRows.containsKey(it) }
         voiceCombo.items.setAll(remaining)
         if (remaining.isNotEmpty()) voiceCombo.value = remaining.first()
+    }
+
+    private fun navigateBar(delta: Int) {
+        syncModelFromUI()
+        val newIndex = (model.currentBarIndex + delta).coerceIn(0, model.barCount - 1)
+        model.switchBar(newIndex)
+        rebuildVoiceGrid()
+        updateBarLabel()
+    }
+
+    private fun updateBarLabel() {
+        barLabel.text = "Mesure ${model.currentBarIndex + 1} / ${model.barCount}"
+    }
+
+    private fun rebuildVoiceGrid() {
+        voicesBox.children.clear()
+        voiceRows.clear()
+        for ((voice, steps) in model.voices) {
+            addVoiceRow(voice, steps)
+        }
+        refreshVoiceCombo()
     }
 
     private fun syncModelFromUI() {
