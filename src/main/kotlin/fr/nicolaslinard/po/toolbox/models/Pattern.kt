@@ -1,14 +1,24 @@
 package fr.nicolaslinard.po.toolbox.models
 
 /**
+ * Common surface shared by every Pocket Operator pattern type, so the
+ * repository/UI layers can hold PO-12 drum patterns and PO-14 melodic
+ * patterns side by side without knowing which one they have.
+ */
+sealed interface AnyPattern {
+    val metadata: PatternMetadata
+    val number: Int
+}
+
+/**
  * Represents a pattern specific to the Pocket Operator PO-12 (Rhythm).
  * PO-12 has 16 patterns, each with 16 steps.
  */
 data class PO12Pattern(
     val voices: Map<PO12DrumVoice, List<Int>>,  // PO12DrumVoice -> active steps (1-16)
-    val metadata: PatternMetadata,
-    val number: Int = 1                          // PO-12 pattern number (1-16)
-) {
+    override val metadata: PatternMetadata,
+    override val number: Int = 1                 // PO-12 pattern number (1-16)
+) : AnyPattern {
     init {
         require(number in 1..16) { "Pattern number must be between 1 and 16" }
         voices.values.forEach { steps ->
