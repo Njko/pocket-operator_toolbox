@@ -2,6 +2,7 @@ package fr.nicolaslinard.po.toolbox.utils
 
 import fr.nicolaslinard.po.toolbox.io.MarkdownParser
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
+import fr.nicolaslinard.po.toolbox.models.PO12Pattern
 import java.io.File
 
 /**
@@ -26,7 +27,7 @@ class VoiceCopyUtility(private val patternsDirectory: File) {
             file.extension == "md"
         }?.mapNotNull { file ->
             try {
-                val pattern = parser.parse(file)
+                val pattern = parser.parse(file) as? PO12Pattern ?: return@mapNotNull null
                 PatternSummary(
                     file = file,
                     name = pattern.metadata.name,
@@ -45,7 +46,7 @@ class VoiceCopyUtility(private val patternsDirectory: File) {
      */
     fun loadVoiceFromPattern(file: File, voice: PO12DrumVoice): List<Int>? {
         return try {
-            val pattern = parser.parse(file)
+            val pattern = parser.parse(file) as? PO12Pattern ?: return null
             pattern.voices[voice]
         } catch (e: Exception) {
             null

@@ -197,4 +197,40 @@ class PatternRepositoryTest {
         val summary = repository.loadAll().first()
         assertEquals("-", summary.bpm)
     }
+
+    // --- PO-14 patterns ---
+
+    @Test
+    fun `should save and load a PO14 pattern alongside PO12 patterns`() {
+        val po12 = TestFixtures.createSimplePattern(name = "Drum Pattern")
+        val po14 = fr.nicolaslinard.po.toolbox.models.PO14Pattern(
+            steps = mapOf(1 to fr.nicolaslinard.po.toolbox.models.PO14Step(fr.nicolaslinard.po.toolbox.models.Pitch.C, 2)),
+            sound = fr.nicolaslinard.po.toolbox.models.PODevice.PO_14.voices.first(),
+            metadata = fr.nicolaslinard.po.toolbox.models.PatternMetadata(name = "Bass Pattern", deviceModel = "PO-14")
+        )
+
+        repository.save(po12)
+        repository.save(po14)
+
+        val loaded = repository.loadAll()
+        assertEquals(2, loaded.size)
+        assertTrue(loaded.any { it.pattern is PO12Pattern })
+        assertTrue(loaded.any { it.pattern is fr.nicolaslinard.po.toolbox.models.PO14Pattern })
+    }
+
+    @Test
+    fun `PO14 pattern summary reports its programmed note count as voiceCount`() {
+        val po14 = fr.nicolaslinard.po.toolbox.models.PO14Pattern(
+            steps = mapOf(
+                1 to fr.nicolaslinard.po.toolbox.models.PO14Step(fr.nicolaslinard.po.toolbox.models.Pitch.C, 2),
+                9 to fr.nicolaslinard.po.toolbox.models.PO14Step(fr.nicolaslinard.po.toolbox.models.Pitch.G, 2)
+            ),
+            sound = fr.nicolaslinard.po.toolbox.models.PODevice.PO_14.voices.first(),
+            metadata = fr.nicolaslinard.po.toolbox.models.PatternMetadata(name = "Bass Count Test", deviceModel = "PO-14")
+        )
+        repository.save(po14)
+
+        val summary = repository.loadAll().first()
+        assertEquals("2", summary.voiceCount)
+    }
 }
