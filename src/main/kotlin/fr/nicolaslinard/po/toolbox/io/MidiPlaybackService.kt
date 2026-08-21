@@ -1,6 +1,6 @@
 package fr.nicolaslinard.po.toolbox.io
 
-import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.AnyPattern
 import fr.nicolaslinard.po.toolbox.models.PatternChain
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Sequencer
@@ -55,7 +55,7 @@ class MidiPlaybackService {
             return tickToBarAndStep(seq.tickPosition, resolution).bar
         }
 
-    fun play(pattern: PO12Pattern) {
+    fun play(pattern: AnyPattern) {
         playPatterns(listOf(pattern), 1)
     }
 
@@ -110,7 +110,7 @@ class MidiPlaybackService {
         sequencer = null
     }
 
-    private fun playPatterns(patterns: List<PO12Pattern>, barCount: Int) {
+    private fun playPatterns(patterns: List<AnyPattern>, barCount: Int) {
         stop()
         val seq = ensureSequencer()
         val sequence = midiExporter.createSequence(patterns, playbackOptions)

@@ -50,6 +50,12 @@ class MidiNoteMapper {
     }
 
     /**
+     * Get the MIDI note number for a programmed PO-14 step (already
+     * resolves pitch, octave and the live half-tone-up effect).
+     */
+    fun getMidiNote(step: fr.nicolaslinard.po.toolbox.models.PO14Step): Int = step.midiNote
+
+    /**
      * Get the GM drum name for a MIDI note number (for debugging/display).
      */
     fun getGMDrumName(midiNote: Int): String? {

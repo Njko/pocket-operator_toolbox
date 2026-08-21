@@ -349,4 +349,40 @@ class MidiExporterTest {
         assertNotNull(sequence)
         // Metadata would be stored as MIDI meta events (track name, tempo, etc.)
     }
+
+    // === PO-14 melodic export ===
+
+    @Test
+    fun `maps a PO14 step to its MIDI note`() {
+        val mapper = MidiNoteMapper()
+        val step = fr.nicolaslinard.po.toolbox.models.PO14Step(fr.nicolaslinard.po.toolbox.models.Pitch.C, octave = 3)
+        assertEquals(step.midiNote, mapper.getMidiNote(step))
+    }
+
+    @Test
+    fun `exports a PO14 pattern to a valid MIDI file`() {
+        val pattern = fr.nicolaslinard.po.toolbox.models.PO14Pattern(
+            steps = mapOf(
+                1 to fr.nicolaslinard.po.toolbox.models.PO14Step(fr.nicolaslinard.po.toolbox.models.Pitch.C, 2),
+                9 to fr.nicolaslinard.po.toolbox.models.PO14Step(fr.nicolaslinard.po.toolbox.models.Pitch.G, 2)
+            ),
+            sound = fr.nicolaslinard.po.toolbox.models.PODevice.PO_14.voices.first(),
+            metadata = fr.nicolaslinard.po.toolbox.models.PatternMetadata(name = "Midi Bass", bpm = 100, deviceModel = "PO-14")
+        )
+        val exporter = MidiExporter()
+        val outputFile = File(testOutputDir, "po14_pattern.mid")
+
+        exporter.exportToMidi(pattern, outputFile)
+
+        assertTrue(outputFile.exists())
+        val sequence = MidiSystem.getSequence(outputFile)
+        assertNotNull(sequence)
+
+        val track = sequence.tracks.first()
+        val noteOnEvents = (0 until track.size()).map { track.get(it) }
+            .filter { (it.message as? ShortMessage)?.command == ShortMessage.NOTE_ON }
+        // 2 programmed steps -> 2 NOTE_ON events, and none on the drum channel (9)
+        assertEquals(2, noteOnEvents.size)
+        assertTrue(noteOnEvents.none { (it.message as ShortMessage).channel == 9 })
+    }
 }

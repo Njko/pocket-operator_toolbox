@@ -1,7 +1,8 @@
 package fr.nicolaslinard.po.toolbox.io
 
-import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
+import fr.nicolaslinard.po.toolbox.models.AnyPattern
 import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.PO14Pattern
 import java.io.File
 import javax.sound.midi.*
 
@@ -16,6 +17,7 @@ class MidiExporter(
 
     companion object {
         private const val DRUM_CHANNEL = 9 // MIDI channel 10 (index 9) for drums
+        private const val MELODIC_CHANNEL = 0 // MIDI channel 1 (index 0) for the PO-14 bass line
         private const val MICROSECONDS_PER_MINUTE = 60_000_000
         private const val DEFAULT_RESOLUTION = 96 // Pulses Per Quarter note (PPQ)
         private const val DEFAULT_NOTE_DURATION = 96 // Duration in ticks (1 quarter note)
@@ -25,7 +27,7 @@ class MidiExporter(
      * Export a single pattern to a MIDI file.
      */
     fun exportToMidi(
-        pattern: PO12Pattern,
+        pattern: AnyPattern,
         outputFile: File,
         options: MidiExportOptions = MidiExportOptions()
     ) {
@@ -37,7 +39,7 @@ class MidiExporter(
      * Export multiple chained patterns to a MIDI file.
      */
     fun exportPatternsToMidi(
-        patterns: List<PO12Pattern>,
+        patterns: List<AnyPattern>,
         outputFile: File,
         options: MidiExportOptions = MidiExportOptions()
     ) {
@@ -49,7 +51,7 @@ class MidiExporter(
      * Create a MIDI sequence from patterns.
      */
     fun createSequence(
-        patterns: List<PO12Pattern>,
+        patterns: List<AnyPattern>,
         options: MidiExportOptions
     ): Sequence {
         val sequence = Sequence(Sequence.PPQ, options.resolution)
@@ -84,6 +86,16 @@ class MidiExporter(
      */
     private fun addPatternToTrack(
         track: Track,
+        pattern: AnyPattern,
+        startTick: Long,
+        options: MidiExportOptions
+    ): Long = when (pattern) {
+        is PO12Pattern -> addDrumPatternToTrack(track, pattern, startTick, options)
+        is PO14Pattern -> addMelodicPatternToTrack(track, pattern, startTick, options)
+    }
+
+    private fun addDrumPatternToTrack(
+        track: Track,
         pattern: PO12Pattern,
         startTick: Long,
         options: MidiExportOptions
@@ -104,7 +116,8 @@ class MidiExporter(
                     stepTick,
                     ShortMessage.NOTE_ON,
                     midiNote,
-                    options.defaultVelocity
+                    options.defaultVelocity,
+                    DRUM_CHANNEL
                 )
 
                 // Add NOTE_OFF event
@@ -113,12 +126,32 @@ class MidiExporter(
                     stepTick + options.noteDuration,
                     ShortMessage.NOTE_OFF,
                     midiNote,
-                    0
+                    0,
+                    DRUM_CHANNEL
                 )
             }
         }
 
         // Return the tick position after this pattern (16 steps)
+        return startTick + (16 * ticksPerStep)
+    }
+
+    private fun addMelodicPatternToTrack(
+        track: Track,
+        pattern: PO14Pattern,
+        startTick: Long,
+        options: MidiExportOptions
+    ): Long {
+        val ticksPerStep = calculateTicksPerStep(options.resolution)
+
+        pattern.steps.forEach { (step, note) ->
+            val midiNote = noteMapper.getMidiNote(note)
+            val stepTick = startTick + ((step - 1) * ticksPerStep)
+
+            addNoteEvent(track, stepTick, ShortMessage.NOTE_ON, midiNote, options.defaultVelocity, MELODIC_CHANNEL)
+            addNoteEvent(track, stepTick + options.noteDuration, ShortMessage.NOTE_OFF, midiNote, 0, MELODIC_CHANNEL)
+        }
+
         return startTick + (16 * ticksPerStep)
     }
 
@@ -155,10 +188,11 @@ class MidiExporter(
         tick: Long,
         command: Int,
         note: Int,
-        velocity: Int
+        velocity: Int,
+        channel: Int
     ) {
         val message = ShortMessage()
-        message.setMessage(command, DRUM_CHANNEL, note, velocity)
+        message.setMessage(command, channel, note, velocity)
         track.add(MidiEvent(message, tick))
     }
 
