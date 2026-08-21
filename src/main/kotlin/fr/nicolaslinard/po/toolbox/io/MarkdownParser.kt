@@ -7,12 +7,22 @@ import java.time.LocalDate
 class MarkdownParser {
 
     /**
-     * Parses a markdown pattern file and returns a PO12Pattern object.
+     * Parses a markdown pattern file and returns the matching pattern type,
+     * dispatched by the `device` frontmatter field (defaults to PO-12 for
+     * files saved before that field existed).
      */
-    fun parse(file: File): PO12Pattern {
+    fun parse(file: File): AnyPattern {
         val content = file.readText()
         val lines = content.lines()
 
+        return if (parseDeviceModel(lines) == "PO-14") {
+            parseMelodic(file, lines)
+        } else {
+            parseDrum(lines)
+        }
+    }
+
+    private fun parseDrum(lines: List<String>): PO12Pattern {
         val metadata = parseFrontMatter(lines)
         val voices = parseVoices(lines)
         val patternNumber = parsePatternNumber(lines)
@@ -22,6 +32,51 @@ class MarkdownParser {
             metadata = metadata,
             number = patternNumber
         )
+    }
+
+    private fun parseMelodic(file: File, lines: List<String>): PO14Pattern {
+        val metadata = parseFrontMatter(lines)
+        val patternNumber = parsePatternNumber(lines)
+        val sound = parseSound(lines)
+            ?: throw IllegalArgumentException("Missing or unrecognized Sound in ${file.name}")
+        val steps = parseMelodicSteps(lines)
+
+        return PO14Pattern(
+            steps = steps,
+            sound = sound,
+            metadata = metadata,
+            number = patternNumber
+        )
+    }
+
+    private fun parseDeviceModel(lines: List<String>): String {
+        lines.forEach { line ->
+            val match = Regex("""^device:\s*"?([^"]+)"?\s*$""").find(line.trim())
+            if (match != null) return match.groupValues[1].trim()
+        }
+        return "PO-12"
+    }
+
+    private fun parseSound(lines: List<String>): POVoice? {
+        val line = lines.find { it.trim().startsWith("**Sound:**") } ?: return null
+        val match = Regex("""\(Sound (\d+)\)""").find(line) ?: return null
+        return PODevice.PO_14.getVoiceByNumber(match.groupValues[1].toInt())
+    }
+
+    private fun parseMelodicSteps(lines: List<String>): Map<Int, PO14Step> {
+        val noteLine = lines.find { it.trim().startsWith("Note:") } ?: return emptyMap()
+        val tokens = noteLine.substringAfter("Note:").trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+
+        val steps = mutableMapOf<Int, PO14Step>()
+        tokens.forEachIndexed { index, token ->
+            val step = index + 1
+            if (step !in 1..16 || token == ".") return@forEachIndexed
+            val match = Regex("""^([A-Ga-g])(#)?(\d+)$""").find(token) ?: return@forEachIndexed
+            val (letter, sharp, octaveText) = match.destructured
+            val pitch = Pitch.fromLetter(letter) ?: return@forEachIndexed
+            steps[step] = PO14Step(pitch = pitch, octave = octaveText.toInt(), halfToneUp = sharp == "#")
+        }
+        return steps
     }
 
     private fun parseFrontMatter(lines: List<String>): PatternMetadata {
@@ -50,7 +105,8 @@ class MarkdownParser {
             difficulty = map["difficulty"]?.let { Difficulty.fromString(it) },
             sourceAttribution = extractQuotedValue(map["source"]),
             author = extractQuotedValue(map["author"]),
-            dateCreated = map["date"]?.let { LocalDate.parse(it) } ?: LocalDate.now()
+            dateCreated = map["date"]?.let { LocalDate.parse(it) } ?: LocalDate.now(),
+            deviceModel = extractQuotedValue(map["device"]) ?: "PO-12"
         )
     }
 
