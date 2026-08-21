@@ -1,5 +1,7 @@
 package fr.nicolaslinard.po.toolbox.desktop
 
+import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.PO14Pattern
 import javafx.beans.property.SimpleStringProperty
 import javafx.scene.control.TableColumn
 import javafx.scene.input.KeyCode
@@ -55,20 +57,31 @@ class PatternListView : View() {
             setOnMouseClicked { event ->
                 if (event.button == MouseButton.PRIMARY && event.clickCount == 2) {
                     val summary = selectionModel.selectedItem ?: return@setOnMouseClicked
-                    val updatedPattern = NewPatternDialog(summary.pattern).show() ?: return@setOnMouseClicked
-                    controller.updatePattern(summary.file, updatedPattern)
+                    editPattern(summary)
                 }
             }
 
             setOnKeyPressed { event ->
                 if (event.code == KeyCode.ENTER) {
                     val summary = selectionModel.selectedItem ?: return@setOnKeyPressed
-                    val updatedPattern = NewPatternDialog(summary.pattern).show() ?: return@setOnKeyPressed
-                    controller.updatePattern(summary.file, updatedPattern)
+                    editPattern(summary)
                 }
             }
 
             vgrow = Priority.ALWAYS
+        }
+    }
+
+    private fun editPattern(summary: PatternSummary) {
+        when (val pattern = summary.pattern) {
+            is PO12Pattern -> {
+                val updated = NewPatternDialog(pattern).show() ?: return
+                controller.updatePattern(summary.file, updated)
+            }
+            is PO14Pattern -> {
+                val updated = NewMelodicPatternDialog(pattern).show() ?: return
+                controller.updatePattern(summary.file, updated)
+            }
         }
     }
 }

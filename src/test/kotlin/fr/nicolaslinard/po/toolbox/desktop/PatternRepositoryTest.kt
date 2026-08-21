@@ -2,6 +2,7 @@ package fr.nicolaslinard.po.toolbox.desktop
 
 import fr.nicolaslinard.po.toolbox.TestFixtures
 import fr.nicolaslinard.po.toolbox.models.PO12DrumVoice
+import fr.nicolaslinard.po.toolbox.models.PO12Pattern
 import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -111,7 +112,7 @@ class PatternRepositoryTest {
         assertEquals(1, loaded.size)
         assertEquals(pattern.metadata.name, loaded[0].pattern.metadata.name)
         assertEquals(pattern.metadata.bpm, loaded[0].pattern.metadata.bpm)
-        assertEquals(4, loaded[0].pattern.voices.size)
+        assertEquals(4, (loaded[0].pattern as PO12Pattern).voices.size)
     }
 
     // --- update ---

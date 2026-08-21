@@ -1,5 +1,7 @@
 package fr.nicolaslinard.po.toolbox.desktop
 
+import fr.nicolaslinard.po.toolbox.models.PO12Pattern
+import fr.nicolaslinard.po.toolbox.models.PO14Pattern
 import javafx.geometry.Insets
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
@@ -30,6 +32,11 @@ class MainView : View("Pocket Operator Toolbox") {
         controller.createPattern(result.firstPattern)
     }
 
+    private fun createNewMelodicPattern() {
+        val pattern = NewMelodicPatternDialog().show() ?: return
+        controller.createPattern(pattern)
+    }
+
     private fun generatePattern() {
         val pattern = GeneratePatternDialog().show() ?: return
         controller.createPattern(pattern)
@@ -37,8 +44,16 @@ class MainView : View("Pocket Operator Toolbox") {
 
     private fun editSelectedPattern() {
         val summary = controller.selectedSummary.value ?: return
-        val updatedPattern = NewPatternDialog(summary.pattern).show() ?: return
-        controller.updatePattern(summary.file, updatedPattern)
+        when (val pattern = summary.pattern) {
+            is PO12Pattern -> {
+                val updated = NewPatternDialog(pattern).show() ?: return
+                controller.updatePattern(summary.file, updated)
+            }
+            is PO14Pattern -> {
+                val updated = NewMelodicPatternDialog(pattern).show() ?: return
+                controller.updatePattern(summary.file, updated)
+            }
+        }
     }
 
     private fun openDocumentation(model: String) {
@@ -87,9 +102,13 @@ class MainView : View("Pocket Operator Toolbox") {
             children.add(MenuBar(
                 Menu("Fichier").apply {
                     items.addAll(
-                        MenuItem("Nouveau pattern").apply {
+                        MenuItem("Nouveau pattern PO-12 (Rhythm)").apply {
                             accelerator = KeyCombination.keyCombination("Ctrl+N")
                             setOnAction { createNewPattern() }
+                        },
+                        MenuItem("Nouveau pattern PO-14 (Sub)").apply {
+                            accelerator = KeyCombination.keyCombination("Ctrl+Shift+N")
+                            setOnAction { createNewMelodicPattern() }
                         },
                         MenuItem("Générer un pattern...").apply {
                             accelerator = KeyCombination.keyCombination("Ctrl+G")
